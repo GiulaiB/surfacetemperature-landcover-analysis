@@ -1,0 +1,67 @@
+##### 00 - data manipulation
+
+# Check the working directory
+getwd()
+
+# Packages
+library(tidyverse)
+library(sf)
+library(terra)
+library(rnaturalearth)
+
+
+##### Import data #####
+# Corine Land Cover (clc) 2018 - Land Cover map across all EU, 100 m resolution
+clc <- rast("data/CorineLandCover2018/DATA/U2018_CLC2018_V2020_20u1.tif") %>% 
+  project(clc, "EPSG:3035") # change to ETRS89 / LAEA Europe (EPSG:3035)
+
+# CHELSA bio01d 2018 - Mean annual Temperature (0.1 Kelvin)
+temp_raw <- rast("data/CHELSA/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc") %>% 
+  project(temp_raw, "EPSG:3035")
+
+# Conversion to °C = (values * 0.1 K) - 273.15
+temp <- (temp_raw * 0.1) - 273.15
+
+
+# CHELSA bio04d 2018 - Temperature seasonality (standard deviation of the monthly temperature * 100)
+temp_stdv <- rast("data/CHELSA/CHELSA_EUR11_obs_bio04d_2018_V.2.1.nc") %>% 
+  project(temp_stdv, "EPSG:3035")
+
+
+# High resolution Digital Terrain Model (DGM) of Austria
+dgm <- rast("data/austria-dgm/dhm_at_lamb_10m_2018.tif") %>% 
+  project(dgm, "EPSG:3035")
+
+
+# Natural Earth package - worldwide countries borders
+world <- ne_countries(scale = "medium", returnclass = "sf") %>% 
+  st_transform(world, crs = 3035)
+
+
+
+##### Austria clipping #####
+
+# Filtering Austria polygon 
+austria <- world %>% 
+  filter(admin == "Austria" | name == "Austria") %>% 
+  vect() # conversion in SpatVector for "terra"
+
+# Corine Land Cover (clc) clipped to Austria
+clc_at <- clc %>%
+  crop(austria) %>% # reduce the extension to the Austrian's bounding box
+  mask(austria)     # remove the pixels that have center out of Austria polygon
+
+# Mean annual Temperature clipped to Austria
+temp_at <- temp %>%
+  crop(austria) %>%
+  mask(austria)
+
+# Temperature seasonality clipped to Austria
+temp_stdv_at <- temp_stdv %>%
+  crop(austria) %>%
+  mask(austria)
+
+# Digital Terrain Model (DGM) clipped to Austria (from Natural Earth)
+dgm_at <- dgm %>%
+  crop(austria) %>%
+  mask(austria)
