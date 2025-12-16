@@ -113,3 +113,75 @@ grid_1km_sf$dgm <- exact_extract(
   }
 )
 
+
+
+
+##### Corine land Cover #####
+# Underlying numeric codes for CLC (drop factor behaviour)
+clc_codes <- as.int(clc_at)
+
+# Custom function: compute % cover of each macro-category in one grid cell
+# Custom function: returns one-row data.frame with % cover per macro-category
+clc_cover_df <- function(values, coverage_fraction) {
+  df <- data.frame(code = values, w = coverage_fraction)
+  
+  # Drop NA and "No Data" category (48) - from the manual of Corine Land Cover
+  df <- df %>%
+    filter(!is.na(code))
+  
+  # If no valid pixels, return NA row
+  if (nrow(df) == 0) {
+    return(data.frame(perc_artificial   = NA_real_, perc_agricultural = NA_real_,
+                      perc_forest_semi  = NA_real_, perc_wetlands     = NA_real_,
+                      perc_water        = NA_real_, perc_no_data      = NA_real_))
+  }
+  
+  # Total cover weight. If it is 0, return NA
+  total_w <- sum(df$w)
+  if (total_w == 0) {
+    return(data.frame(perc_artificial   = NA_real_, perc_agricultural = NA_real_,
+                      perc_forest_semi  = NA_real_, perc_wetlands     = NA_real_,
+                      perc_water        = NA_real_, perc_no_data      = NA_real_))
+  }
+  
+  # Grouping Land Cover values into macro-categories (from the manual of Corine Land Cover)
+  # Still using the weights
+  art_w <- sum(df$w[df$code >=  1 & df$code <= 11])
+  agr_w <- sum(df$w[df$code >= 12 & df$code <= 22])
+  for_w <- sum(df$w[df$code >= 23 & df$code <= 34])
+  wet_w <- sum(df$w[df$code >= 35 & df$code <= 39])
+  wat_w <- sum(df$w[df$code >= 40 & df$code <= 44])
+  nod_w <- sum(df$w[df$code == 48]) # no data
+  
+  # Conversion from weights to percentages for each grid cell
+  data.frame(perc_artificial   = art_w / total_w * 100,
+             perc_agricultural = agr_w / total_w * 100,
+             perc_forest_semi  = for_w / total_w * 100,
+             perc_wetlands     = wet_w / total_w * 100,
+             perc_water        = wat_w / total_w * 100,
+             perc_no_data      = nod_w / total_w * 100)
+}
+
+clc_props <- exact_extract(clc_codes, 
+                           grid_1km_sf,
+                           clc_cover_df) # function previously created
+
+# Conversion in tibble format 
+clc_props <- as_tibble(clc_props, .name_repair = "unique")
+
+# Final grid with environmental variables and CLC cover percentages
+# Bind the tibble with the rest
+grid_all <- bind_cols(grid_1km_sf, clc_props)
+
+# Check
+grid_all %>% 
+  dplyr::select(grid_id, temp, temp_stdv, 
+                dgm, perc_artificial, 
+                perc_agricultural, perc_forest_semi, 
+                perc_wetlands, perc_water) %>%
+  summary()
+
+
+
+##### Save the grid #####
+saveRDS(grid_all, "data/new_version_data/grid_all.rds")
