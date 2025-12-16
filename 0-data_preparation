@@ -1,13 +1,11 @@
 ##### 00 - data manipulation
 
-# Check the working directory
-getwd()
-
 # Packages
 library(tidyverse)
 library(sf)
 library(terra)
 library(rnaturalearth)
+library(exactextractr)
 
 
 ##### Import data #####
@@ -65,3 +63,53 @@ temp_stdv_at <- temp_stdv %>%
 dgm_at <- dgm %>%
   crop(austria) %>%
   mask(austria)
+
+
+
+##### Grid section #####
+### Grid creation
+austria_sf <- austria %>% st_as_sf()
+
+# 1 km² grid over the extent of Austria. "grid_id" as ID column
+grid_1km_sf <- st_make_grid(
+  austria_sf,
+  cellsize = 1000,   # 1 km
+  square   = TRUE) %>%
+  st_sf(grid_id = seq_along(.), geometry = .)
+
+# Clip grid to Austria border
+grid_1km_sf <- st_intersection(grid_1km_sf, austria_sf)
+
+
+
+### Data downscale = weighted mean of the variables in the cells
+# Temperature: area-weighted mean per grid cell
+grid_1km_sf$temp <- exact_extract(  
+  temp_at[[1]], # first layer of temp
+  grid_1km_sf,
+  function(values, coverage_fraction) {
+    # coverage_fraction is the proportion of each cell inside the polygon (0-1)
+    weighted.mean(values, coverage_fraction, na.rm = TRUE)
+  }
+)
+
+grid_1km_sf %>% str()
+
+# Temperature seasonality: area-weighted mean per grid cell
+grid_1km_sf$temp_stdv <- exact_extract(
+  temp_stdv_at[[1]],
+  grid_1km_sf,
+  function(values, coverage_fraction) {
+    weighted.mean(values, coverage_fraction, na.rm = TRUE)
+  }
+)
+
+# DGM: area-weighted mean per grid cell
+grid_1km_sf$dgm <- exact_extract(
+  dgm_at[[1]],
+  grid_1km_sf,
+  function(values, coverage_fraction) {
+    weighted.mean(values, coverage_fraction, na.rm = TRUE)
+  }
+)
+
