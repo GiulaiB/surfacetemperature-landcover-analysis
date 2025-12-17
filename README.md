@@ -18,10 +18,10 @@ The code contained within `0-data_manipulation.R`:
 - Clips rasters to **Austria** (Natural Earth borders).
 - Creates a **1 km² grid**, clipped to the Austria boundary.
 - Computes, for each grid cell:
-  - area-weighted mean **temperature** (temp)
-  - area-weighted mean **temperature seasonality** (temp_stdv)
-  - area-weighted mean **elevation** (dgm)
-  - % cover of Corine Land Cover (clc) macro-categories: Artificial, Agricultural, Forest/Seminatural, Wetlands, Water and No Data.
+  - area-weighted mean **temperature** (`temp`)
+  - area-weighted mean **temperature seasonality** (`temp_stdv`)
+  - area-weighted mean **elevation** (`dgm`)
+  - % cover of Corine Land Cover (`clc`) macro-categories: Artificial, Agricultural, Forest/Seminatural, Wetlands, Water and No Data.
 
 Outputs are saved to:
 - `data/new_version_data/grid_all.rds`
