@@ -1,6 +1,6 @@
 # Austria Surface Temperature - Land Cover analysis
 
-This repository uses CHELSEA, Corine Land Cover (clc) and Digital terrain model (dgm) open source data to build a **1 km² grid over Austria** and run a small set of statistical analyses to explore relationships between:
+This project builds a fully reproducible R pipeline to study how land cover relates to surface temperature across different elevations, testing how much variation can be explained by topography (elevation) and land-cover composition (e.g., artificial, agricultural, forest/semi-natural, wetlands, water). In particular, this repository uses CHELSEA, Corine Land Cover (clc) and Digital terrain model (dgm) open source data to build a **1 km² grid over Austria** and run a small set of statistical analyses to explore relationships between:
 - **Mean annual temperature** (`temp`; CHELSA bio01d, year 2018)
 - **Temperature seasonality** (`temp_stdv`; CHELSA bio04d, year 2018)
 - **Elevation** (`dgm`; Digital terrain model Austria)
