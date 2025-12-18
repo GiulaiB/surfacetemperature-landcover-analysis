@@ -78,23 +78,6 @@ The following core packages are used across scripts:
 
 ---
 
-## Data sources
-You must download the required datasets using the information given in `DATA_SOURCES.md`. After the download, you need to place the data in the paths expected by the scripts:
-
-Corine Land Cover 2018 GeoTIFF:
-- `data/CorineLandCover2018/DATA/U2018_CLC2018_V2020_20u1.tif`
-
-CHELSA netCDF (bio01d and bio04d for 2018):
-- `data/CHELSA/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc`
-- `data/CHELSA/CHELSA_EUR11_obs_bio04d_2018_V.2.1.nc`
-
-Austria DGM GeoTIFF:
-- `data/austria-dgm/dhm_at_lamb_10m_2018.tif`
-
-If your filenames differ or you want to change them, please update the rast("...") paths in `0-data_manipulation.R`.
-
----
-
 ## Repository structure (DA COMPLETARE)
 
 ```txt
@@ -115,6 +98,20 @@ images/
 ... # TODO            
 
 ```
+
+You must download the required datasets using the information given in `DATA_SOURCES.md`. After the download, you need to place the data in the paths expected by the scripts:
+
+Corine Land Cover 2018 GeoTIFF:
+- `data/CorineLandCover2018/DATA/U2018_CLC2018_V2020_20u1.tif`
+
+CHELSA netCDF (bio01d and bio04d for 2018):
+- `data/CHELSA/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc`
+- `data/CHELSA/CHELSA_EUR11_obs_bio04d_2018_V.2.1.nc`
+
+Austria DGM GeoTIFF:
+- `data/austria-dgm/dhm_at_lamb_10m_2018.tif`
+
+If your filenames differ or you want to change them, please update the rast("...") paths in `0-data_manipulation.R`.
 
 *[1] EPSG:3035 (ETRS89 / LAEA Europe) is a specific Geographic Coordinate Reference System (CRS) used for mapping Europe, particularly for statistical analysis and environmental monitoring, because it uses the Lambert Azimuthal Equal-Area (LAEA) projection to accurately represent areas across the continent. It's based on the European Terrestrial Reference System 1989 (ETRS89) datum and is centered around 52°N, 10°E, providing true-to-scale area representation for pan-European data.*  
 *[2] In statistics, the Pearson correlation coefficient (PCC) is a correlation coefficient that measures linear correlation between two sets of data. It is the ratio between the covariance of two variables and the product of their standard deviations; thus, it is essentially a normalized measurement of the covariance, such that the result always has a value between −1 and 1.*
