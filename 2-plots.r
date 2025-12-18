@@ -38,3 +38,47 @@ ggsave("outputs/boxplot_Land_Cover-Temperature.png", plot = boxplot1, dpi = 300,
 
 
 
+##### Scatter plot + regression line T ∝ Elevation + Land Cover#####
+
+# Second linear model between Temperature, Elevation, and Land Cover
+# Creation of the regression line of the model for every Land Cover category (all parallel)
+pred_grid <- tidyr::expand_grid(
+  dgm = seq(min(df_lc3$dgm, na.rm = TRUE),
+            max(df_lc3$dgm, na.rm = TRUE),
+            length.out = 200),
+  dominant_cover = levels(df_lc3$dominant_cover)
+) %>%
+  mutate(
+    dominant_cover = factor(dominant_cover, levels = levels(df_lc3$dominant_cover)),
+    pred_temp = predict(lm_telc, newdata = pick(dgm, dominant_cover))
+  ) %>%
+  arrange(dominant_cover, dgm)
+
+# Plot
+plot_lm2 <- ggplot() +
+  geom_point(
+    data = df_lc3,
+    aes(x = dgm, y = temp),
+    colour = "black", alpha = 0.25, shape = 20, size = 0.25
+  ) +
+  geom_line(
+    data = pred_grid, linewidth = 1,
+    aes(x = dgm, y = pred_temp, colour = dominant_cover)
+  ) +
+  facet_wrap(~ dominant_cover) +
+  labs(
+    x = "Elevation (m)",
+    y = "Mean annual temperature (°C)",
+    title = "Linear relationship: T ∝ Elevation + Land Cover",
+    colour = "Land cover"
+  ) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+plot_lm2
+
+ggsave("outputs/linear_model_Temperature-Elevation-Land_Cover.png", 
+       plot = plot_lm2, dpi = 300, width = 15, height = 6)
+
+
+
