@@ -13,6 +13,7 @@ Free, full and open access to the products and services of the Copernicus Land M
 1. When distributing or communicating Copernicus Land Monitoring Service products and services (data, software scripts, web services, user and methodological documentation and similar) to the public, users shall inform the public of the source of these products and services.
 2. Where the Copernicus Land Monitoring Service products and services have been adapted or modified by the user, the user shall clearly state this.
 3. Users shall make sure not to convey the impression to the public that the user's activities are officially endorsed by the European Union.  
+
 For more information visit the link given above.
 
 ## CHELSA bio01d, year 2018
@@ -28,7 +29,8 @@ For the Temperature seasonality - CHELSA bio 04 = Temperature seasonality given 
 The licence used is the **Creative Commons Zero - No Rights Reserved (CC0 1.0)**.
 - Model Citation: *Brun, P., Zimmermann, N. E., Hari, C., Pellissier, L., & Karger, D. N. Global climate-related predictors at kilometer resolution for the past and future. ESSD 2022 14(12), 5573-5603. https://doi.org/10.5194/essd-14-5573-2022*
 - Data Citation: *Brun, P., Zimmermann, N. E., Hari, C., Pellissier, L., Karger, D. N. (2022). CHELSA-BIOCLIM+ A novel set of global climate-related predictors at kilometre-resolution. EnviDat. https://www.doi.org/10.16904/envidat.332.*  
-For more information visit the link above.
+
+For more information visit the link given above.
 
 ## Digital terrain model (DGM) Austria:
 
@@ -41,7 +43,8 @@ The Zip file contains the data in the GeoTIFF format. (Projection EPSG:31287)
 **Access and use constraints:**
 The licence used is the **Creative Commons Attribution 4.0 International**, you can see the details [here](https://creativecommons.org/licenses/by/4.0/).
 - EU Data Citation: *Land Kärnten, ‘Digital terrain model (DGM) Austria’, 2015 (updated 2024-06-10), accessed 2025-11-30, http://data.europa.eu/88u/dataset/b5de6975-417b-4320-afdb-eb2a9e2a1dbf*  
-For more information visit the link above.
+
+For more information visit the link given above.
 
 
-After you successfully download the Data, you need to follow the instructions given in the `README.md`. 
+After you successfully download the Data, you need to follow the instructions given in the `README.md`.
