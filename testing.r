@@ -4,11 +4,14 @@ library(sf)
 library(tidyverse)
 library(exactextractr)
 
-# Load project functions (adjust path if needed)
+# Load project functions
 source("functions.R")
+
 # source("0-data_preparation.R") # run "0-data_preparation.R" before this code
 # source("1-data_analysis.R") # run "1-data_analysis.R" before this code
 
+
+########## Testing the data preparation file ##########
 
 
 ##### Testing the pipeline #####
@@ -212,4 +215,191 @@ test_that("'clc_cover_df' macro percentages sum to 100", {
 
 
 
-cat("All tests in testing.r completed.\n")
+########## Testing the analysis file ##########
+
+
+##### Testing the dominant cover attribution #####
+
+test_that("dominant_cover is NA when the maximum Land Cover percentage is below the threshold", {
+  # GIVEN: a single row where the maximum percentage is < 50
+  dom_threshold <- 50
+  
+  df_lm <- tibble(
+    temp = 5,
+    dgm  = 1000,
+    perc_artificial   = 10,
+    perc_agricultural = 20,
+    perc_forest_semi  = 49,  # max is 49 (< 50)
+    perc_wetlands     = 1,
+    perc_water        = 0,
+    perc_no_data      = 20
+  )
+  
+  lc_cols <- c(
+    "perc_artificial", "perc_agricultural", "perc_forest_semi",
+    "perc_wetlands", "perc_water", "perc_no_data"
+  )
+  
+  # WHEN: we compute max_perc, n_max, and dominant_cover (same logic as 1-data_analyses.R)
+  out <- df_lm %>%
+    mutate(
+      max_perc = pmax(!!!syms(lc_cols), na.rm = TRUE),
+      n_max = rowSums(across(all_of(lc_cols), ~ dplyr::near(.x, max_perc)), na.rm = TRUE),
+      dominant_cover = case_when(
+        max_perc < dom_threshold ~ NA_character_,
+        n_max != 1 ~ NA_character_,
+        dplyr::near(max_perc, perc_artificial)   ~ "Artificial",
+        dplyr::near(max_perc, perc_agricultural) ~ "Agricultural",
+        dplyr::near(max_perc, perc_forest_semi)  ~ "Seminatural",
+        dplyr::near(max_perc, perc_wetlands)     ~ "Wetlands",
+        dplyr::near(max_perc, perc_water)        ~ "Water",
+        dplyr::near(max_perc, perc_no_data)      ~ "No Data",
+        TRUE ~ NA_character_
+      )
+    )
+  
+  # THEN: dominant cover is NA because it does not pass the threshold
+  expect_true(is.na(out$dominant_cover))
+  expect_equal(out$max_perc, 49)
+})
+
+test_that("dominant_cover assigns the correct label when there is a unique maximum >= threshold", {
+  # GIVEN: a single row with a unique max >= 50
+  dom_threshold <- 50
+  
+  df_lm <- tibble(
+    temp = 5,
+    dgm  = 1000,
+    perc_artificial   = 60, # unique max
+    perc_agricultural = 20,
+    perc_forest_semi  = 10,
+    perc_wetlands     = 5,
+    perc_water        = 0,
+    perc_no_data      = 5
+  )
+  
+  lc_cols <- c(
+    "perc_artificial", "perc_agricultural", "perc_forest_semi",
+    "perc_wetlands", "perc_water", "perc_no_data"
+  )
+  
+  # WHEN: we compute dominant_cover
+  out <- df_lm %>%
+    mutate(
+      max_perc = pmax(!!!syms(lc_cols), na.rm = TRUE),
+      n_max = rowSums(across(all_of(lc_cols), ~ dplyr::near(.x, max_perc)), na.rm = TRUE),
+      dominant_cover = case_when(
+        max_perc < dom_threshold ~ NA_character_,
+        n_max != 1 ~ NA_character_,
+        dplyr::near(max_perc, perc_artificial)   ~ "Artificial",
+        dplyr::near(max_perc, perc_agricultural) ~ "Agricultural",
+        dplyr::near(max_perc, perc_forest_semi)  ~ "Seminatural",
+        dplyr::near(max_perc, perc_wetlands)     ~ "Wetlands",
+        dplyr::near(max_perc, perc_water)        ~ "Water",
+        dplyr::near(max_perc, perc_no_data)      ~ "No Data",
+        TRUE ~ NA_character_
+      )
+    )
+  
+  # THEN: the dominant cover is correctly identified
+  expect_equal(out$max_perc, 60)
+  expect_equal(out$n_max, 1)
+  expect_equal(out$dominant_cover, "Artificial")
+})
+
+test_that("With a unique strict maximum >= threshold, dominant_cover matches the argmax class", {
+  # GIVEN: random rows where we force a strict unique maximum above threshold
+  set.seed(75)
+  dom_threshold <- 50
+  
+  lc_cols <- c(
+    "perc_artificial", "perc_agricultural", "perc_forest_semi",
+    "perc_wetlands", "perc_water", "perc_no_data"
+  )
+  
+  labels <- c("Artificial", "Agricultural", "Seminatural", "Wetlands", "Water", "No Data")
+  
+  for (i in 1:150) {
+    # Start with random values below 50
+    x <- runif(6, min = 0, max = 49)
+    
+    # Choose a winner and force it to be > 50, and strictly larger than all others
+    winner <- sample(1:6, 1)
+    x[winner] <- runif(1, min = dom_threshold + 1, max = 100)
+    
+    df_lm <- tibble(
+      temp = 5,
+      dgm  = 1000,
+      perc_artificial   = x[1],
+      perc_agricultural = x[2],
+      perc_forest_semi  = x[3],
+      perc_wetlands     = x[4],
+      perc_water        = x[5],
+      perc_no_data      = x[6]
+    )
+    
+    # WHEN: we compute dominant_cover
+    out <- df_lm %>%
+      mutate(
+        max_perc = pmax(!!!syms(lc_cols), na.rm = TRUE),
+        n_max = rowSums(across(all_of(lc_cols), ~ dplyr::near(.x, max_perc)), na.rm = TRUE),
+        dominant_cover = case_when(
+          max_perc < dom_threshold ~ NA_character_,
+          n_max != 1 ~ NA_character_,
+          dplyr::near(max_perc, perc_artificial)   ~ "Artificial",
+          dplyr::near(max_perc, perc_agricultural) ~ "Agricultural",
+          dplyr::near(max_perc, perc_forest_semi)  ~ "Seminatural",
+          dplyr::near(max_perc, perc_wetlands)     ~ "Wetlands",
+          dplyr::near(max_perc, perc_water)        ~ "Water",
+          dplyr::near(max_perc, perc_no_data)      ~ "No Data",
+          TRUE ~ NA_character_
+        )
+      )
+    
+    # THEN: classification matches the forced winner
+    expect_equal(out$n_max, 1)
+    expect_equal(out$dominant_cover, labels[winner])
+  }
+})
+
+##### Testing the reference level change ##### 
+
+test_that("reference level selection uses Seminatural if present, otherwise the most frequent category", {
+  # GIVEN: a dataset where Seminatural exists among the included levels
+  df1 <- tibble(
+    dominant_cover = factor(c(rep("Artificial", 10), rep("Seminatural", 8), rep("Agricultural", 6))),
+    temp = rnorm(24),
+    dgm  = runif(24, 0, 3000)
+  )
+  
+  # WHEN: we apply the reference selection logic
+  if ("Seminatural" %in% levels(df1$dominant_cover)) {
+    df1$dominant_cover <- relevel(df1$dominant_cover, ref = "Seminatural")
+  } else {
+    ref_level <- names(which.max(table(df1$dominant_cover)))
+    df1$dominant_cover <- relevel(df1$dominant_cover, ref = ref_level)
+  }
+  
+  # THEN: Seminatural is the reference (first level)
+  expect_equal(levels(df1$dominant_cover)[1], "Seminatural")
+  
+  # GIVEN: a dataset where Seminatural is NOT present
+  df2 <- tibble(
+    dominant_cover = factor(c(rep("Artificial", 12), rep("Agricultural", 7), rep("Water", 3))),
+    temp = rnorm(22),
+    dgm  = runif(22, 0, 3000)
+  )
+  
+  # WHEN: we apply the same logic
+  if ("Seminatural" %in% levels(df2$dominant_cover)) {
+    df2$dominant_cover <- relevel(df2$dominant_cover, ref = "Seminatural")
+  } else {
+    ref_level <- names(which.max(table(df2$dominant_cover)))
+    df2$dominant_cover <- relevel(df2$dominant_cover, ref = ref_level)
+  }
+  
+  # THEN: the most frequent category is the reference
+  expect_equal(levels(df2$dominant_cover)[1], "Artificial")
+})
+
+cat("All tests in test1.r completed.\n")
