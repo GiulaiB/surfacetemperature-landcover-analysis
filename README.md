@@ -79,32 +79,39 @@ The file `function.R` defines two functions used as summary functions inside `ex
 
 ## Requirements
 The following core packages are used across scripts:
-- terra, sf, exactextractr
+- terra
+- sf
+- exactextractr
+- rnaturalearth
 - tidyverse
 - rnaturalearth
-- broom, rstatix
+- broom
+- rstatix
 - testthat
-- exactextractr
+
 
 ---
 
-## Repository structure (DA COMPLETARE)
+## Repository structure
 
 ```txt
-  0-data_manipulation.R
-  1-data_analyses.R
-  2-plots.R
-  function.R
-  testing.R
+  0-data_preparation.r
+  1-data_analysis.r
+  2-plots.r
+  functions.r
+  testing.r
 
 data/
-  CorineLandCover2018/...
-  CHELSA/...
-  austria-dgm/...
+  U2018_CLC2018_V2020_20u1.tiff
+  CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc
+  dhm_at_lamb_10m_2018.tiff
   clean_data.gpkg
 
 outputs/
-... # TODO            
+  linear_model_Temperature-Elevation.png
+  boxplot_Land_Cover-Temperature.png
+  linear_model_Temperature-Elevation-Land_Cover.png
+  boxplot_Land_Cover-Temperature-Elevation.png
 
 ```
 
