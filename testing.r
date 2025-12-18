@@ -55,7 +55,7 @@ test_that("CRS matches between rasters and Austria polygon", {
 
 # Custom function to compare two spatial extents with a tolerance
 #
-# 'expect_ext_equal_tol' is a *testthat* helper that asserts two extents are
+# 'expect_ext_equal_tol' is a 'testthat' helper that asserts two extents are
 #equal within a numeric tolerance, by comparing their four bounding coordinates.
 #
 # PARAMETERS:
