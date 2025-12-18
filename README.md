@@ -54,15 +54,26 @@ The plots are saved and can be found into the `outputs` folder:
 
 ### 3) Testing (`testing.R`)
 
-The file `testing.R` checks:
-- Austria mask geometry validity + CRS consistency across inputs
-- Clipping does not resample rasters (resolution preserved)
-- Clipped extents match the Austria bbox snapped to each raster grid
-- Property-based checks: sampled non-NA masked cells intersect Austria; downscaled means fall within per-cell min/max; land-cover percentages are within [0, 100] and sum to ~100 when defined.
+The file `testing.R` uses `testthat` to check the project workflow. In particular:
+- Check that core spatial inputs exist and have valid geometry/CRS,
+- Verify clipped rasters keep expected resolution/extent,
+- Does unit-tests `area_weighted_mean()` and `clc_cover_df()`, including the edge cases
+- tests key analysis logic such as `dominant_cover` assignment and reference-level selection.
 
 ### 4) Functions (`functions.R`)
 
-The code whithin `function.R` defines the helper `clc_cover_df()` used by `exact_extract()` to convert CLC numeric codes into macro-category cover percentages (Artificial/Agricultural/Forest-Seminatural/Wetlands/Water/No Data), handling NA/empty cases and using `coverage_fraction` weights.
+The file `function.R` defines two functions used as summary functions inside `exact_extract()` for raster–polygon extraction. The two functions are:
+
+*`area_weighted_mean()`*, that:
+- Checks that values and coverage_fraction have the same length
+- Keeps only valid pixels (finite value + finite weight + weight > 0)
+- Computes the coverage-fraction-weighted mean: sum(v * w) / sum(w)
+
+*`clc_cover_df()`*, that:
+- Builds a small data frame of CLC codes (values) and weights (coverage_fraction)
+- Drops NA codes, returns a one-row NA result if no valid pixels or total weight is 0
+-	Sums weighted cover for CLC macro-categories by code ranges: artificial (1–11), agricultural (12–22), forest/semi-natural (23–34), wetlands (35–39), water (40–44), no-data (48)
+-	Returns a one-row data.frame with the percentage of each macro-category in the polygon
 
 ---
 

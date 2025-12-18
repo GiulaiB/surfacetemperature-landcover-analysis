@@ -402,4 +402,4 @@ test_that("reference level selection uses Seminatural if present, otherwise the 
   expect_equal(levels(df2$dominant_cover)[1], "Artificial")
 })
 
-cat("All tests in test1.r completed.\n")
+cat("All tests in testing.r completed.\n")
