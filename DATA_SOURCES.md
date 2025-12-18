@@ -5,7 +5,7 @@
 **Provider:** Copernicus Land Monitoring Service / European Environment Agency (EEA)  
 **Product:** CORINE Land Cover 2018 (raster 100 m), Europe, 6-yearly (version 2020_20u1, May 2020)  
 
-You can find the download page [here](https://sdi.eea.europa.eu/catalogue/copernicus/eng/catalog.search#/metadata/960998c1-1870-4e82-8051-6485205ebbac) To access the data go to the Download button that redirects you to the CLMS Website: select the *Europe	v2020_20u1	100 m	Raster	Geotiff	125 MB	u2018_clc2018_v2020_20u1_raster100m* and then add to cart. You need to log in the European Commission Authentication Service but the data are free.
+You can find the download page [here](https://sdi.eea.europa.eu/catalogue/copernicus/eng/catalog.search#/metadata/960998c1-1870-4e82-8051-6485205ebbac). To access the data go to the Download button that redirects you to the CLMS Website: select the "*Europe	v2020_20u1	100 m	Raster	Geotiff	125 MB	u2018_clc2018_v2020_20u1_raster100m*" and then add to cart. You need to log in the European Commission Authentication Service but the data are free.
 
 **Access and use constraints:**
 The Copernicus component is governed by Regulation (EU) No 2021/696 of the European Parliament and of the Council of 28 April 2021 establishing the Union Space Programme and the European Union Agency for the Space Programme and repealing Regulations (EU) No 912/2010, (EU) No 1285/2013 and (EU) No 377/2014 and Decision No 541/2014/EU. Within the Copernicus component, a portfolio of land monitoring activities has been delegated by the European Union to the European Environment Agency (EEA) and the DG Joint Research Centre of the European Commission. The Copernicus land monitoring products and services are made available on a principle of full, open and free access, as established by the Commission Delegated Regulation (EU) No 1159/2013 of 12 July 2013.  
@@ -21,9 +21,7 @@ For more information visit the link given above.
 **Provider:** CHELSA / WSL  
 **Product:** WGS84 horizontal datum (decimal degrees)
 
-For the Temperature - CHELSA bio 01 = Mean annual temperature calculated as the average of mean monthly temperatures over the year, you can find the download page [here](https://os.zhdk.cloud.switch.ch/chelsav2/EUR11/obs/annual/V2.1/bio01d/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc)
-
-For the Temperature seasonality - CHELSA bio 04 = Temperature seasonality given by the standard deviation of mean monthly temperatures / 100 , you can find the download page [here](https://os.zhdk.cloud.switch.ch/chelsav2/EUR11/obs/annual/V2.1/bio04d/CHELSA_EUR11_obs_bio04d_2018_V.2.1.nc)
+For the Temperature - CHELSA bio 01 = Mean annual temperature calculated as the average of mean monthly temperatures over the year, you can directly download the file [here](https://os.zhdk.cloud.switch.ch/chelsav2/EUR11/obs/annual/V2.1/bio01d/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc).
 
 **Access and use constraints:**
 The licence used is the **Creative Commons Zero - No Rights Reserved (CC0 1.0)**.
@@ -38,7 +36,7 @@ For more information visit the link given above.
 **Product:** Digital terrain model from Airborne Laserscan data. Elevations of the terrain in the grid of 10 m x 10 m.
 
 You can find the download page [here](https://data.europa.eu/data/datasets/b5de6975-417b-4320-afdb-eb2a9e2a1dbf?locale=en)  
-The Zip file contains the data in the GeoTIFF format. (Projection EPSG:31287)
+The `.zip` folder contains the data in the GeoTIFF format (projection EPSG:31287). The file used in the code is can be retrived using the following path `u2018_clc2018_v2020_20u1_raster100m/DATA/U2018_CLC2018_V2020_20u1.tif` inside the `.zip` folder.
 
 **Access and use constraints:**
 The licence used is the **Creative Commons Attribution 4.0 International**, you can see the details [here](https://creativecommons.org/licenses/by/4.0/).
@@ -47,4 +45,4 @@ The licence used is the **Creative Commons Attribution 4.0 International**, you 
 For more information visit the link given above.
 
 
-After you successfully download the Data, you need to follow the instructions given in the `README.md`.
+After you successfully download the data, you need to follow the instructions given in the `README.md`.
