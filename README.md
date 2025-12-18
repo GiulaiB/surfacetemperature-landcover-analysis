@@ -95,11 +95,11 @@ The following core packages are used across scripts:
 ## Repository structure
 
 ```txt
-  0-data_preparation.r
-  1-data_analysis.r
-  2-plots.r
-  functions.r
-  testing.r
+0-data_preparation.r
+1-data_analysis.r
+2-plots.r
+functions.r
+testing.r
 
 data/
   U2018_CLC2018_V2020_20u1.tiff
