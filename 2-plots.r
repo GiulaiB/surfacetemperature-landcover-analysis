@@ -101,7 +101,7 @@ df_lc3 <- df_lc3 %>%
     )
   )
 
-# Build the plot from df_lc3
+# Plot
 boxplot2 <- ggplot(df_lc3, aes(x = dominant_cover, y = temp)) +
   geom_boxplot() +
   facet_wrap(~ elev_group) +
