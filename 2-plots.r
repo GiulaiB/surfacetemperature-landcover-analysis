@@ -82,3 +82,37 @@ ggsave("outputs/linear_model_Temperature-Elevation-Land_Cover.png",
 
 
 
+##### Box-plots: Temperature by Land Cover within each elevation range #####
+
+min(df_lm$dgm) # min cell elevation m
+max(df_lm$dgm) # max cell elevation m
+
+# Elevation breaks every 500 m starting from the min elevation (100 m), until the max
+elev_breaks <- seq(100, max(df_lm$dgm) + 500, by = 500)
+
+# Add the elevation ranges at the dataframe
+df_lc3 <- df_lc3 %>%
+  mutate(
+    elev_group = cut(
+      dgm,
+      breaks = elev_breaks,
+      include.lowest = TRUE,
+      right = FALSE
+    )
+  )
+
+# Build the plot from df_lc3
+boxplot2 <- ggplot(df_lc3, aes(x = dominant_cover, y = temp)) +
+  geom_boxplot() +
+  facet_wrap(~ elev_group) +
+  labs(
+    x = "Dominant Land Cover category",
+    y = "Mean annual Temperature (°C)",
+    title = "Box-plot: Land Cover - Temperature within elevation bands") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+boxplot2
+
+ggsave("outputs/boxplot_Land_Cover-Temperature-Elevation.png",
+       plot = boxplot2, dpi = 300, width = 6, height = 5)
