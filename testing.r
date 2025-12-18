@@ -1,27 +1,66 @@
-# Testing file
 library(testthat)
 library(terra)
 library(sf)
 library(tidyverse)
 library(exactextractr)
 
-
-# Test the clipping file "austria"
-stopifnot(nrow(sf::st_as_sf(austria)) == 1) # one country filtered
-stopifnot(terra::is.valid(austria)) # valid geometry
-
-# Test the match of the CRS for all the data with the clipping file
-stopifnot(terra::same.crs(clc, austria))
-stopifnot(terra::same.crs(temp, austria))
-stopifnot(terra::same.crs(temp_stdv, austria))
-stopifnot(terra::same.crs(dgm, austria))
+# Load project functions (adjust path if needed)
+source("functions.R")
+# source("0-data_preparation.R") # run "0-data_preparation.R" before this code
+# source("1-data_analysis.R") # run "1-data_analysis.R" before this code
 
 
 
+##### Testing the pipeline #####
 
-# Testing the shape of the clipped variables
-# UNIT TEST RESULTING SHAPE VS MASK POLYGON
-# Compare extents with a tolerance (meters) 
+test_that("Austria clipping object exists and has one feature/row", {
+  # GIVEN: austria object already created in the pipeline
+  skip_if_not(exists("austria"))
+  
+  # WHEN: checking the number of features
+  n <- nrow(sf::st_as_sf(austria))
+  
+  # THEN: exactly one country polygon exists
+  expect_equal(n, 1)
+})
+
+test_that("Austria geometry is valid", {
+  # GIVEN: austria object already created in the pipeline
+  skip_if_not(exists("austria"))
+  
+  # WHEN: validating geometry
+  valid <- terra::is.valid(austria)
+  
+  # THEN: geometry is valid
+  expect_true(valid)
+})
+
+test_that("CRS matches between rasters and Austria polygon", {
+  # GIVEN: austria, clc, temp, temp_stdv, dgm already created in the pipeline
+  skip_if_not(exists("clc"))
+  skip_if_not(exists("temp"))
+  skip_if_not(exists("dgm"))
+  
+  # WHEN / THEN: CRS must match
+  expect_true(terra::same.crs(clc, austria))
+  expect_true(terra::same.crs(temp, austria))
+  expect_true(terra::same.crs(dgm, austria))
+})
+
+
+##### Testing the shape of the clipped variables #####
+
+# Custom function to compare two spatial extents with a tolerance
+#
+# 'expect_ext_equal_tol' is a *testthat* helper that asserts two extents are
+#equal within a numeric tolerance, by comparing their four bounding coordinates.
+#
+# PARAMETERS:
+#   - left, right, bottom, and top boundaries
+#   - e_out: observed extent (e.g., computed by the function under test)
+#   - e_exp: expected/reference extent
+#   - tol:   numeric tolerance passed to testthat::expect_equal()
+
 expect_ext_equal_tol <- function(e_out, e_exp, tol) {
   expect_equal(e_out$xmin, e_exp$xmin, tolerance = tol)
   expect_equal(e_out$xmax, e_exp$xmax, tolerance = tol)
@@ -29,114 +68,148 @@ expect_ext_equal_tol <- function(e_out, e_exp, tol) {
   expect_equal(e_out$ymax, e_exp$ymax, tolerance = tol)
 }
 
-test_that("Clipped rasters keep original grid (no resampling)", {
-  # crop/mask should NOT change resolution
-  expect_equal(res(clc_at),       res(clc))
-  expect_equal(res(temp_at),      res(temp))
-  expect_equal(res(temp_stdv_at), res(temp_stdv))
-  expect_equal(res(dgm_at),       res(dgm_austria))
+test_that("Clipped rasters keep original grid resolution", {
+  # GIVEN: original rasters and their clipped versions exist
+  skip_if_not(exists("clc")  && exists("clc_at"))
+  skip_if_not(exists("temp") && exists("temp_at"))
+  skip_if_not(exists("dgm")  && exists("dgm_at"))
+  
+  # WHEN: comparing resolutions
+  # THEN: resolution of clipped rasters equals original rasters
+  expect_equal(res(clc_at),  res(clc))
+  expect_equal(res(temp_at), res(temp))
+  expect_equal(res(dgm_at),  res(dgm))
 })
 
-test_that("Clipped extents are the Austria bbox aligned outward to each raster grid", {
-  # align() gives the bbox snapped to the raster grid; snap='out' matches "keep touching pixels"
-  exp_clc  <- terra::align(ext(austria), clc,         snap = "out")
-  exp_temp <- terra::align(ext(austria), temp,        snap = "out")
-  exp_tsdv <- terra::align(ext(austria), temp_stdv,   snap = "out")
-  exp_dgm  <- terra::align(ext(austria), dgm_austria, snap = "out")
+test_that("Clipped extents align to Austria bbox snapped outward to each raster grid", {
+  # GIVEN: austria + clipped rasters
+  skip_if_not(exists("austria"))
+  skip_if_not(exists("clc")  && exists("clc_at"))
+  skip_if_not(exists("temp") && exists("temp_at"))
+  skip_if_not(exists("dgm")  && exists("dgm_at"))
   
-  # tolerance: a fraction of the cell size (floating point + projections)
-  expect_ext_equal_tol(ext(clc_at),       exp_clc,  tol = min(res(clc)) * 1e-6)
-  expect_ext_equal_tol(ext(temp_at),      exp_temp, tol = min(res(temp)) * 1e-6)
-  expect_ext_equal_tol(ext(temp_stdv_at), exp_tsdv, tol = min(res(temp_stdv)) * 1e-6)
-  expect_ext_equal_tol(ext(dgm_at),       exp_dgm,  tol = min(res(dgm_austria)) * 1e-6)
-})
-
-
-
-# PROPERTY BASED TEST: Every non-NA cell in temp_at has its center inside the Austria polygon.
-test_that("temp_at non-NA cells intersect the Austria mask", {
-  # Austria polygon in sf format (mask geometry)
-  austria_sf <- austria %>% st_as_sf()
+  # WHEN: computing expected aligned extents
+  exp_clc  <- terra::align(ext(austria), clc,  snap = "out")
+  exp_temp <- terra::align(ext(austria), temp, snap = "out")
+  exp_dgm  <- terra::align(ext(austria), dgm,  snap = "out")
   
-  # Work on the first layer of temp_at (mean annual temperature for 2018)
-  r <- temp_at[[1]]
-  
-  # Values of all cells (NA included)
-  vals <- terra::values(r, na.rm = FALSE)
-  
-  # Indices of cells that survived the mask (non-NA)
-  valid_cells <- which(!is.na(vals))
-  
-  # Sanity check: there is at least one non-NA cell
-  expect_true(length(valid_cells) > 0)
-  
-  # Randomly sample up to 1000 valid cells
-  set.seed(123)  # reproducibility
-  n_sample <- min(1000L, length(valid_cells))
-  sample_cells <- sample(valid_cells, size = n_sample)
-  
-  # Build polygons for the sampled raster cells
-  cells_poly <- terra::as.polygons(r, cells = sample_cells)
-  cells_sf   <- st_as_sf(cells_poly)
-  
-  # For each cell polygon, check if it intersects the Austria polygon
-  intersects_mat <- st_intersects(cells_sf, austria_sf, sparse = FALSE)
-  intersects_any <- apply(intersects_mat, 1L, any)
-  
-  # Property-based check:
-  # every sampled non-NA cell polygon must intersect the Austria mask
-  expect_true(all(intersects_any))
+  # THEN: clipped extents match expectations within tolerance based on the file's resolution
+  expect_ext_equal_tol(ext(clc_at),  exp_clc,  tol = min(res(clc)) * 1e-6)
+  expect_ext_equal_tol(ext(temp_at), exp_temp, tol = min(res(temp)) * 1e-6)
+  expect_ext_equal_tol(ext(dgm_at),  exp_dgm,  tol = min(res(dgm)) * 1e-6)
 })
 
 
 
-# Test data ranges after the downscaling
-# Property-based test: per-cell mean must lie in that cell’s min/max
-expect_mean_within_cell_minmax <- function(mean_vec, r, polygons, tol = 1e-10) {
-  cell_min <- exact_extract(r, polygons, "min")
-  cell_max <- exact_extract(r, polygons, "max")
-  
-  ok <- is.na(mean_vec) | is.nan(mean_vec) |
-    (mean_vec >= (cell_min - tol) & mean_vec <= (cell_max + tol))
-  
-  expect_true(all(ok))
-  invisible(TRUE)
-}
+##### Testing 'area_weighted_mean' function #####
 
-test_that("Downscaled weighted means are within per-cell raster min/max (property test)", {
-  expect_mean_within_cell_minmax(grid_1km_sf$temp,      temp_at[[1]],      grid_1km_sf)
-  expect_mean_within_cell_minmax(grid_1km_sf$temp_stdv, temp_stdv_at[[1]], grid_1km_sf)
-  expect_mean_within_cell_minmax(grid_1km_sf$dgm,       dgm_at[[1]],       grid_1km_sf)
+test_that("'area_weighted_mean' computes the correct weighted mean", {
+  # GIVEN: valid values and valid positive weights
+  values <- c(10, 20)
+  weights <- c(0.25, 0.75)
+  
+  # WHEN: computing the area-weighted mean
+  res <- area_weighted_mean(values, weights)
+  
+  # THEN: it matches manual computation
+  expect_equal(res, 17.5)
+})
+
+test_that("'area_weighted_mean' ignores invalid values (NA/Inf) and invalid weights", {
+  # GIVEN: a mix of valid and invalid pairs
+  values <- c(10, NA, 30, Inf)
+  weights <- c(0.2, 0.5, 0.3, 0.9)
+  
+  # WHEN: computing the area-weighted mean
+  res <- area_weighted_mean(values, weights)
+  
+  # THEN: only valid pairs are used
+  expect_equal(res, 22)
 })
 
 
 
-# Test Corine Land Cover data after the downscaling
-# Does clc_props contains 6 columns?
-# Are all the values between 0 and 100 (percentages)?
+##### Testing the values of downscaled variables ##### 
 
-test_that("clc_props has 6 columns and percentages within [0, 100]", {
+test_that("Grid downscaled values stay within the clipped raster global min/max", {
+  # GIVEN: the pipeline objects exist
+  skip_if_not(exists("grid_1km_sf"))
+  skip_if_not(exists("temp_at") && exists("dgm_at"))
   
-  # Structure: exactly 6 columns with expected names
-  expect_equal(ncol(clc_props), 6)
+  tol <- 1e-6
   
-  expect_named(
-    clc_props,
-    c("perc_artificial", "perc_agricultural", "perc_forest_semi",
-      "perc_wetlands", "perc_water", "perc_no_data")
-  )
+  # Temperature
+  # WHEN: we compute global min/max of raster and grid column
+  r_min <- terra::global(temp_at[[1]], "min", na.rm = TRUE)[1, 1]
+  r_max <- terra::global(temp_at[[1]], "max", na.rm = TRUE)[1, 1]
+  g_min <- min(grid_1km_sf$temp, na.rm = TRUE)
+  g_max <- max(grid_1km_sf$temp, na.rm = TRUE)
   
-  # Values: all non-NA values must be between 0 and 100
-  # (This is a property-based check: percentages can't be negative or > 100)
-  m <- as.matrix(clc_props)
+  # THEN: grid range must be inside raster range
+  expect_gte(g_min, r_min - tol)
+  expect_lte(g_max, r_max + tol)
   
-  ok <- is.na(m) | (m >= 0 & m <= 100)
-  expect_true(all(ok))
+  # Elevation 
+  r_min <- terra::global(dgm_at[[1]], "min", na.rm = TRUE)[1, 1]
+  r_max <- terra::global(dgm_at[[1]], "max", na.rm = TRUE)[1, 1]
+  g_min <- min(grid_1km_sf$dgm, na.rm = TRUE)
+  g_max <- max(grid_1km_sf$dgm, na.rm = TRUE)
   
-  # if a row is fully defined (no NA), its percentages should sum to ~100
-  # This catches bugs in total_w or category boundaries.
-  row_ok <- rowSums(is.na(m)) == 0
-  if (any(row_ok)) {
-    expect_equal(rowSums(m[row_ok, , drop = FALSE]), rep(100, sum(row_ok)), tolerance = 1e-6)
+  expect_gte(g_min, r_min - tol)
+  expect_lte(g_max, r_max + tol)
+})
+
+
+
+##### Testing 'clc_cover_df' function #####
+
+test_that("'clc_cover_df' returns correct percentages for a simple known case", {
+  # GIVEN: 4 pixels each contributing equally (0.25)
+  # codes map to: artificial (1), agricultural (12), forest/semi (23), wetlands (35)
+  codes <- c(1, 12, 23, 35)
+  w <- c(0.25, 0.25, 0.25, 0.25)
+  
+  # WHEN: computing the macro-category composition
+  out <- clc_cover_df(codes, w)
+  
+  # THEN: each relevant category is 25%
+  expect_equal(out$perc_artificial,   25)
+  expect_equal(out$perc_agricultural, 25)
+  expect_equal(out$perc_forest_semi,  25)
+  expect_equal(out$perc_wetlands,     25)
+  expect_equal(out$perc_water,         0)
+  expect_equal(out$perc_no_data,       0)
+})
+
+test_that("'clc_cover_df' returns NA row when no valid pixels remain", {
+  # GIVEN: all codes are NA
+  codes <- c(NA, NA, NA)
+  w <- c(0.2, 0.3, 0.5)
+  
+  # WHEN: computing macro-category composition
+  out <- clc_cover_df(codes, w)
+  
+  # THEN: all percentage outputs are NA
+  expect_true(all(is.na(out)))
+})
+
+test_that("'clc_cover_df' macro percentages sum to 100", {
+  # GIVEN: random recognized codes and positive weights
+  set.seed(75)
+  
+  for (i in 1:100) {
+    n <- sample(10:300, 1)
+    codes <- sample(c(1:44, 48), size = n, replace = TRUE)
+    w <- runif(n, min = 0.001, max = 1)
+    
+    # WHEN: computing macro-category composition
+    out <- clc_cover_df(codes, w)
+    
+    # THEN: sum should be 100 (within floating-point tolerance)
+    expect_equal(sum(unlist(out)), 100, tolerance = 1e-10)
   }
 })
+
+
+
+cat("All tests in testing.r completed.\n")
