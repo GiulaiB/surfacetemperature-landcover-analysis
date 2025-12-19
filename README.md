@@ -5,7 +5,7 @@ This project builds a fully reproducible R pipeline to study how Land Cover rela
 - **Elevation** (`dgm`; Digital terrain model Austria)
 - **Land cover composition** (`clc`; Corine Land Cover 2018)
 
-The workflow is split into three scripts: **data preparation → analyses → plots**, plus a testing and a function script. A brief description is given in the next paragraph.
+The workflow is split into three scripts: **data preparation → analyses → plots**, plus a testing and a function script. A brief description is given in the next paragraph. In addition, if you use `RStudio`, we have included an RStudio project file called `software-project.Rproj` to ensure the scripts run correctly.
 
 ---
 
@@ -47,10 +47,10 @@ The file `2-plots.R` produces:
 - Boxplot: Temperature by dominant Land Cover category by Elevation ranges
 
 The plots are saved and can be found into the `outputs` folder:
-- `linear_model_Temperature-Elevation.png`
-- `boxplot_Land_Cover-Temperature.png`
-- `linear_model_Temperature-Elevation-Land_Cover.png`
-- `boxplot_Land_Cover-Temperature-Elevation.png`
+- `linear_model_Temperature-Elevation.jpeg`
+- `boxplot_Land_Cover-Temperature.jpeg`
+- `linear_model_Temperature-Elevation-Land_Cover.jpeg`
+- `boxplot_Land_Cover-Temperature-Elevation.jpeg`
 
 ### 3) Testing (`testing.R`)
 
