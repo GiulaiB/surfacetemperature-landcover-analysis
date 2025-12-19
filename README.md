@@ -55,25 +55,25 @@ The plots are saved and can be found into the `outputs` folder:
 ### 3) Testing (`testing.R`)
 
 The file `testing.R` uses `testthat` to check the project workflow. In particular:
-- Check that core spatial inputs exist and have valid geometry/CRS,
-- Verify clipped rasters keep expected resolution/extent,
-- Does unit-tests `area_weighted_mean()` and `clc_cover_df()`, including the edge cases
-- tests key analysis logic such as `dominant_cover` assignment and reference-level selection.
+- Check that core spatial inputs exist and have valid geometry and shared CRS
+- Verify clipped rasters keep expected resolution and extent
+- Executes tests on `area_weighted_mean` and `clc_cover_df` functions
+- Tests key analysis passages such as `dominant_cover` assignment and reference-level selection
 
 ### 4) Functions (`functions.R`)
 
-The file `function.R` defines two functions used as summary functions inside `exact_extract()` for raster–polygon extraction. The two functions are:
+The file `function.R` defines two functions used as summary functions inside `exact_extract` for raster–polygon extraction. The two functions are:
 
-*`area_weighted_mean()`*, that:
-- Checks that values and coverage_fraction have the same length
+*`area_weighted_mean`*, that:
+- Checks that `values` and `coverage_fraction` have the same length
 - Keeps only valid pixels (finite value + finite weight + weight > 0)
-- Computes the coverage-fraction-weighted mean: sum(v * w) / sum(w)
+- Computes the coverage-fraction-weighted mean: sum(values * weight) / sum(weight)
 
-*`clc_cover_df()`*, that:
-- Builds a small data frame of CLC codes (values) and weights (coverage_fraction)
+*`clc_cover_df`*, that:
+- Builds a small data frame of CLC codes (`values`) and weights (`coverage_fraction`)
 - Drops NA codes, returns a one-row NA result if no valid pixels or total weight is 0
--	Sums weighted cover for CLC macro-categories by code ranges: artificial (1–11), agricultural (12–22), forest/semi-natural (23–34), wetlands (35–39), water (40–44), no-data (48)
--	Returns a one-row data.frame with the percentage of each macro-category in the polygon
+-	Sums weighted cover for CLC macro-categories by code ranges: artificial (1–11), agricultural (12–22), semi-natural (23–34), wetlands (35–39), water (40–44), no-data (48)
+-	Returns a one-row `data.frame` with the percentage of each macro-category in the polygon for every grid cell
 
 ---
 
@@ -95,11 +95,12 @@ The following core packages are used across scripts:
 ## Repository structure
 
 ```txt
-  0-data_preparation.r
-  1-data_analysis.r
-  2-plots.r
-  functions.r
-  testing.r
+0-data_preparation.r
+1-data_analysis.r
+2-plots.r
+functions.r
+testing.r
+software-project.Rproj
 
 data/
   U2018_CLC2018_V2020_20u1.tiff
