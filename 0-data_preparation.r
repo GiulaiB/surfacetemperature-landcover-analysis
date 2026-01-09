@@ -24,7 +24,7 @@ temp <- (temp_raw * 0.1) - 273.15
 
 # Digital Terrain Model (DGM) of Austria
 dgm <- rast("data/dhm_at_lamb_10m_2018.tif") %>% 
-  project("EPSG:3035", method = "bilinear")
+  terra::project("EPSG:3035", method = "bilinear")
 
 # Natural Earth - worldwide country borders
 world <- ne_countries(scale = "medium", returnclass = "sf") %>% 
