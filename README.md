@@ -8,23 +8,68 @@ This project builds a reproducible R pipeline to study how Land Cover relates to
 The workflow is split into three scripts: **data preparation → analyses → plots**, plus a testing script and a `functions.r` file. A brief description of all parts is given in the next paragraph. In addition, if you use `RStudio`, an RStudio project file called `software-project.Rproj` is included to ensure the scripts run correctly.
 
 ---
+## Installation
+
+### Software
+- **R** (recent version recommended)
+- (Optional but recommended) **RStudio**
+
+### Install R packages
+Run this once in R:
+
+```r
+install.packages(c(
+  "tidyverse",
+  "sf",
+  "terra",
+  "exactextractr",
+  "rnaturalearth",
+  "broom",
+  "rstatix",
+  "testthat"
+))
+```
+
+(Optional but recommended) After installation, you can quickly verify that everything loads:
+```r
+pkgs <- c("tidyverse","sf","terra","exactextractr","rnaturalearth","broom","rstatix","testthat")
+invisible(lapply(pkgs, require, character.only = TRUE))
+```
 
 ## Setup
 
 This repository does **not** include the raw input datasets (since they are large), so you need to create the local folder structure and place the downloaded files where the scripts expect them.
 
-i) Create these folders in the project root:
-- `data/` (raw inputs + generated `clean_data.gpkg`)
-- `outputs/` (saved figures)
+**Step 1:** Create these folders in the project root:
+  - `data/` (raw inputs + generated `clean_data.gpkg`)
+  - `outputs/` (saved figures)
 
 (Optional) To ensure `outputs/` exists you can create folders from R. Quick folder creation can be done by adding: `dir.create("data")` for `data/` and `dir.create("outputs")` for `outputs/`.
 
-ii) Download the datasets listed in `DATA_SOURCES.md` and place  them inside `data/` so that these paths exist:
-- `data/U2018_CLC2018_V2020_20u1.tif`
-- `data/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc`
-- `data/dhm_at_lamb_10m_2018.tif`
+**Step 2:** Download the datasets listed in `DATA_SOURCES.md` and place  them inside `data/` so that these paths exist:
+  - `data/U2018_CLC2018_V2020_20u1.tif`
+  - `data/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc`
+  - `data/dhm_at_lamb_10m_2018.tif`
 
-If you prefer different filenames or a different folder layout, please update the `rast("...")` paths in `0-data_preparation.r`.
+The pipeline expects **three rasters** in `data/`:
+
+- **Corine Land Cover (CLC) 2018**  
+   - File: `data/U2018_CLC2018_V2020_20u1.tif`  
+   - Type: categorical raster (integer codes).  
+   - Used as categorical: it is reprojected using nearest-neighbor resampling (`method = "near"`).  
+
+- **CHELSA bio01d (2018)**  
+   - File: `data/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc`  
+   - Type: NetCDF raster.  
+   - Values: stored as **0.1 Kelvin** in the raw product and converted to **°C** in the script.
+
+- **Digital Terrain Model (DGM) Austria**  
+   - File: `data/dhm_at_lamb_10m_2018.tif`  
+   - Type: continuous raster (elevation).  
+   - Used as continuous: it is reprojected using bilinear resampling (`method = "bilinear"`).
+
+**NOTE:** Input datasets may have different original CRSs: the pipeline reprojects everything to **EPSG:3035** inside `0-data_preparation.r`.  
+**NOTE:** If you prefer different filenames or a different folder layout, please update the `rast("...")` paths in `0-data_preparation.r`.
 
 ## How to run
 
