@@ -1,17 +1,36 @@
 # Austria Surface Temperature - Land Cover analysis
 
-This project builds a fully reproducible R pipeline to study how Land Cover relates to surface temperature across different elevations, testing how much variation can be explained by Elevation and Land Cover composition (Artificial, Agricultural, Semi-natural). In particular, this repository uses CHELSEA, Corine Land Cover (clc) and Digital terrain model (dgm) open source data to build a **1 km² grid over Austria** and run a small set of statistical analyses to explore relationships between:
-- **Mean annual temperature** (`temp`; CHELSA bio01d, year 2018)
+This project builds a reproducible R pipeline to study how Land Cover relates to surface temperature across different elevations, testing how much variation can be explained by Elevation and Land Cover composition (Artificial, Agricultural, Semi-natural). In particular, this repository uses **CHELSA**, Corine Land Cover (CLC) and Digital terrain Model (DGM) open source data to build a **1 km² grid over Austria** and run a small set of statistical analyses to explore relationships between:
+- **Mean annual temperature** (`temp`; CHELSA bio01d, year 2018) 
 - **Elevation** (`dgm`; Digital terrain model Austria)
-- **Land cover composition** (`clc`; Corine Land Cover 2018)
+- **Land cover composition** (`clc`; Corine Land Cover, year 2018)
 
-The workflow is split into three scripts: **data preparation → analyses → plots**, plus a testing and a function script. A brief description is given in the next paragraph. In addition, if you use `RStudio`, we have included an RStudio project file called `software-project.Rproj` to ensure the scripts run correctly.
+The workflow is split into three scripts: **data preparation → analyses → plots**, plus a testing script and a `functions.r` file. A brief description of all parts is given in the next paragraph. In addition, if you use `RStudio`, an RStudio project file called `software-project.Rproj` is included to ensure the scripts run correctly.
 
 ---
+
+## Setup
+
+This repository does **not** include the raw input datasets (since they are large), so you need to create the local folder structure and place the downloaded files where the scripts expect them.
+
+i) Create these folders in the project root:
+- `data/` (raw inputs + generated `clean_data.gpkg`)
+- `outputs/` (saved figures)
+
+Quick folder creation from R: for `data/` please add `dir.create("data")` and for `outputs/` please add `dir.create("outputs")`.
+
+ii) Download the datasets listed in `DATA_SOURCES.md` and place  them inside `data/` so that these paths exist:
+- `data/U2018_CLC2018_V2020_20u1.tif`
+- `data/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc`
+- `data/dhm_at_lamb_10m_2018.tif`
+
+If you prefer different filenames or a different folder layout, please update the `rast("...")` paths in `0-data_preparation.r`.
+
 
 ## Project workflow
 
 ### 0) Data preparation (`0-data_preparation.R`)
+
 The file `0-data_preparation.R` contains:
 - Loads and reprojects all rasters to **EPSG:3035 (ETRS89 / LAEA Europe)** *[1]*
 - Clips rasters to **Austria** borders
@@ -21,13 +40,12 @@ The file `0-data_preparation.R` contains:
   - area-weighted mean **elevation** (`dgm`)
   - % cover of Corine Land Cover (`clc`) macro-categories: Artificial, Agricultural, Semi-natural, Wetlands, Water and No Data
 
-The output of the first file is saved to:
-- `data/clean_data.gpkg`
-You can find it in the data folder in this repository.
-
-**IMPORTANT:** Reprojecting large rasters to EPSG:3035 can be slow and heavy. Make sure you have enough pacience!
+The output is saved as:
+- `data/clean_data.gpkg` (created locally in your `data/` folder)
+**NOTE:** Reprojecting large rasters to EPSG:3035 can be slow and memory-intensive. Make sure you have enough patience!
 
 ### 1) Data analysis (`1-data_analysis.R`)
+
 The file `1-data_analysis.R` contains:
 - Pearson correlation test between Temperature and Elevation
 - Linear model: `temp ~ dgm`
@@ -40,17 +58,18 @@ The file `1-data_analysis.R` contains:
   - nested-model F-test + AIC comparison
 
 ### 2) Plots (`2-plots.R`)
+
 The file `2-plots.R` produces:
 - Scatter plot: Temperature vs Elevation (+ regression line)
 - Boxplot: Temperature by dominant Land Cover category
 - Scatter plot: Temperature vs Elevation and Land Cover
 - Boxplot: Temperature by dominant Land Cover category by Elevation ranges
 
-The plots are saved and can be found into the `outputs` folder:
-- `linear_model_Temperature-Elevation.jpeg`
-- `boxplot_Land_Cover-Temperature.jpeg`
-- `linear_model_Temperature-Elevation-Land_Cover.jpeg`
-- `boxplot_Land_Cover-Temperature-Elevation.jpeg`
+The plots are saved into the `outputs/` folder as:
+- `outputs/linear_model_Temperature-Elevation.png`
+- `outputs/boxplot_Land_Cover-Temperature.png`
+- `outputs/linear_model_Temperature-Elevation-Land_Cover.png`
+- `outputs/boxplot_Land_Cover-Temperature-Elevation.png`
 
 ### 3) Testing (`testing.R`)
 
