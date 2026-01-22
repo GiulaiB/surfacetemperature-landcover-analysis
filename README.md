@@ -15,19 +15,20 @@ The workflow is split into three scripts: **data preparation → analyses → pl
 - (Optional but recommended) **RStudio**
 
 ### Install R packages
-Run this once in R:
+The following core packages are used across scripts:
+- terra
+- sf
+- exactextractr
+- rnaturalearth
+- tidyverse
+- broom
+- rstatix
+- testthat
+
+To install, run this once in R:
 
 ```r
-install.packages(c(
-  "tidyverse",
-  "sf",
-  "terra",
-  "exactextractr",
-  "rnaturalearth",
-  "broom",
-  "rstatix",
-  "testthat"
-))
+install.packages(c("tidyverse", "sf", "terra", "exactextractr", "rnaturalearth", "broom", "rstatix", "testthat"))
 ```
 
 (Optional but recommended) After installation, you can quickly verify that everything loads:
@@ -153,20 +154,6 @@ The file `function.R` defines two functions used as summary functions inside `ex
 - Drops NA codes, returns a one-row NA result if no valid pixels or total weight is 0
 -	Sums weighted cover for CLC macro-categories by code ranges: artificial (1–11), agricultural (12–22), semi-natural (23–34), wetlands (35–39), water (40–44), no-data (48)
 -	Returns a one-row `data.frame` with the percentage of each macro-category in the polygon for every grid cell
-
----
-
-## Requirements
-The following core packages are used across scripts:
-- terra
-- sf
-- exactextractr
-- rnaturalearth
-- tidyverse
-- broom
-- rstatix
-- testthat
-
 
 ---
 
