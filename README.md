@@ -17,7 +17,7 @@ i) Create these folders in the project root:
 - `data/` (raw inputs + generated `clean_data.gpkg`)
 - `outputs/` (saved figures)
 
-Quick folder creation from R: for `data/` please add `dir.create("data")` and for `outputs/` please add `dir.create("outputs")`.
+(Optional) To ensure `outputs/` exists you can create folders from R. Quick folder creation can be done by adding: `dir.create("data")` for `data/` and `dir.create("outputs")` for `outputs/`.
 
 ii) Download the datasets listed in `DATA_SOURCES.md` and place  them inside `data/` so that these paths exist:
 - `data/U2018_CLC2018_V2020_20u1.tif`
@@ -26,6 +26,26 @@ ii) Download the datasets listed in `DATA_SOURCES.md` and place  them inside `da
 
 If you prefer different filenames or a different folder layout, please update the `rast("...")` paths in `0-data_preparation.r`.
 
+## How to run
+
+**NOTE:** It's recommended to open the RStudio project (`software-project.Rproj`) so the working directory is the project root.
+
+Then run the scripts in order:
+- **0)** Builds the grid + extracts variables and writes: `data/clean_data.gpkg`
+source("0-data_preparation.r")
+
+- **1)** Runs statistics and model comparisons (reads: `data/clean_data.gpkg`)
+source("1-data-analysis.r")
+
+- **2)** Produces and saves figures to `outputs/`
+source("2-plots.r")
+
+If you prefer running from the terminal:
+```bash
+Rscript 0-data_preparation.r
+Rscript 1-data-analysis.r
+Rscript 2-plots.r
+```
 
 ## Project workflow
 
@@ -103,7 +123,6 @@ The following core packages are used across scripts:
 - exactextractr
 - rnaturalearth
 - tidyverse
-- rnaturalearth
 - broom
 - rstatix
 - testthat
@@ -113,6 +132,7 @@ The following core packages are used across scripts:
 
 ## Repository structure
 
+Tracked files (added in the repository):
 ```txt
 0-data_preparation.r
 1-data_analysis.r
@@ -120,7 +140,12 @@ The following core packages are used across scripts:
 functions.r
 testing.r
 software-project.Rproj
+README.md
+DATA_SOURCES.md
+```
 
+Local folders (need to be created):
+```txt
 data/
   U2018_CLC2018_V2020_20u1.tiff
   CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc
@@ -135,6 +160,4 @@ outputs/
 
 ```
 
-You must download the required datasets using the information given in `DATA_SOURCES.md`. After the download, you need to place the files in a `data` folder. If your filenames differ or you want to change them, please update the rast("...") paths in `0-data_manipulation.R`.
-
-*[1] EPSG:3035 (ETRS89 / LAEA Europe) is a specific Geographic Coordinate Reference System (CRS) used for mapping Europe, particularly for statistical analysis and environmental monitoring, because it uses the Lambert Azimuthal Equal-Area (LAEA) projection to accurately represent areas across the continent. It's based on the European Terrestrial Reference System 1989 (ETRS89) datum and is centered around 52°N, 10°E, providing true-to-scale area representation for pan-European data.*  
+*[1] EPSG:3035 (ETRS89 / LAEA Europe) is a projected CRS (specific Geographic Coordinate Reference System) widely used for pan-European environmental analysis, particularly for statistical analysis and environmental monitoring, because it uses the Lambert Azimuthal Equal-Area projection (LAEA) to accurately represent areas across the continent. It's based on the European Terrestrial Reference System 1989 (ETRS89) datum and is centered around 52°N, 10°E, providing true-to-scale area representation for pan-European data.*
