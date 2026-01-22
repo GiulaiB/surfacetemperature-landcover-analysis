@@ -27,12 +27,12 @@ The following core packages are used across scripts:
 
 To install, run this once in R:
 
-```r
+```bash
 install.packages(c("tidyverse", "sf", "terra", "exactextractr", "rnaturalearth", "broom", "rstatix", "testthat"))
 ```
 
 (Optional but recommended) After installation, you can quickly verify that everything loads:
-```r
+```bash
 pkgs <- c("tidyverse","sf","terra","exactextractr","rnaturalearth","broom","rstatix","testthat")
 invisible(lapply(pkgs, require, character.only = TRUE))
 ```
