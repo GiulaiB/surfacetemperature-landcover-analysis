@@ -31,14 +31,9 @@ If you prefer different filenames or a different folder layout, please update th
 **NOTE:** It's recommended to open the RStudio project (`software-project.Rproj`) so the working directory is the project root.
 
 Then run the scripts in order:
-- **0)** Builds the grid + extracts variables and writes: `data/clean_data.gpkg`
-source("0-data_preparation.r")
-
-- **1)** Runs statistics and model comparisons (reads: `data/clean_data.gpkg`)
-source("1-data-analysis.r")
-
-- **2)** Produces and saves figures to `outputs/`
-source("2-plots.r")
+- **0)** `0-data_preparation.r` builds the grid + extracts variables and writes: `data/clean_data.gpkg`
+- **1)** `source("1-data-analysis.r")` runs statistics and model comparisons (reads: `data/clean_data.gpkg`)
+- **2)** `2-plots.r` produces and saves figures to `outputs/`
 
 If you prefer running from the terminal:
 ```bash
