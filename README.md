@@ -1,11 +1,11 @@
 # Austria Surface Temperature - Land Cover analysis
 
-This project builds a reproducible R pipeline to study how Land Cover relates to surface temperature across different elevations, testing how much variation can be explained by Elevation and Land Cover composition (Artificial, Agricultural, Semi-natural). In particular, this repository uses **CHELSA**, Corine Land Cover (CLC) and Digital terrain Model (DGM) open source data to build a **1 km² grid over Austria** and run a small set of statistical analyses to explore relationships between:
+This project builds a reproducible R pipeline to study how **Land Cover** relates to **surface temperature** across different **elevations**, testing how much variation can be explained by Elevation and Land Cover composition (Artificial, Agricultural, Semi-natural). In particular, this repository uses CHELSA, Corine Land Cover (CLC) and Digital terrain Model (DGM) open source data to build a **1 km² grid over Austria** and run a small set of statistical analyses to explore relationships between:
 - **Mean annual temperature** (`temp`; CHELSA bio01d, year 2018) 
 - **Elevation** (`dgm`; Digital terrain model Austria)
 - **Land cover composition** (`clc`; Corine Land Cover, year 2018)
 
-The workflow is split into three scripts: **data preparation → analyses → plots**, plus a testing script and a `functions.r` file. A brief description of all parts is given in the next paragraph. In addition, if you use `RStudio`, an RStudio project file called `software-project.Rproj` is included to ensure the scripts run correctly.
+The workflow is split into three scripts: **data preparation → analyses → plots**, plus a testing script and a file containing the functions used. A brief description of all parts is given in the next paragraph. In addition, if you use `RStudio`, an RStudio project file called `software-project.Rproj` is included to ensure the scripts run correctly.
 
 ---
 ## Installation
@@ -25,7 +25,7 @@ The following core packages are used across scripts:
 - rstatix
 - testthat
 
-To install, run this once in R:
+To install, once in R run this:
 
 ```bash
 install.packages(c("tidyverse", "sf", "terra", "exactextractr", "rnaturalearth", "broom", "rstatix", "testthat"))
@@ -43,11 +43,11 @@ This repository does **not** include the raw input datasets (since they are larg
 
 **Step 1:** Create these folders in the project root:
   - `data/` (raw inputs + generated `clean_data.gpkg`)
-  - `outputs/` (saved figures)
+  - `outputs/` (saved graphs)
 
-(Optional) To ensure `outputs/` exists you can create folders from R. Quick folder creation can be done by adding: `dir.create("data")` for `data/` and `dir.create("outputs")` for `outputs/`.
+(Optional) Quick folder creation can be done by adding: `dir.create("data")` for `data/` and `dir.create("outputs")` for `outputs/`.
 
-**Step 2:** Download the datasets listed in `DATA_SOURCES.md` and place  them inside `data/` so that these paths exist:
+**Step 2:** Download the datasets listed in `DATA_SOURCES.md` and place them inside `data/` so that these paths exist:
   - `data/U2018_CLC2018_V2020_20u1.tif`
   - `data/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc`
   - `data/dhm_at_lamb_10m_2018.tif`
@@ -56,20 +56,19 @@ The pipeline expects **three rasters** in `data/`:
 
 - **Corine Land Cover (CLC) 2018**  
    - File: `data/U2018_CLC2018_V2020_20u1.tif`  
-   - Type: categorical raster (integer codes).  
-   - Used as categorical: it is reprojected using nearest-neighbor resampling (`method = "near"`).  
+   - Type: categorical raster (integer codes)
+   - Used as categorical: it is reprojected using nearest-neighbor resampling 
 
 - **CHELSA bio01d (2018)**  
    - File: `data/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc`  
-   - Type: NetCDF raster.  
-   - Values: stored as **0.1 Kelvin** in the raw product and converted to **°C** in the script.
+   - Type: NetCDF raster
+   - Values: stored as 0.1 Kelvin in the raw product, later converted to °C in the script
 
 - **Digital Terrain Model (DGM) Austria**  
    - File: `data/dhm_at_lamb_10m_2018.tif`  
-   - Type: continuous raster (elevation).  
-   - Used as continuous: it is reprojected using bilinear resampling (`method = "bilinear"`).
+   - Type: continuous raster (elevation)
+   - Used as continuous: it is reprojected using bilinear resampling
 
-**NOTE:** Input datasets may have different original CRSs: the pipeline reprojects everything to **EPSG:3035** inside `0-data_preparation.r`.  
 **NOTE:** If you prefer different filenames or a different folder layout, please update the `rast("...")` paths in `0-data_preparation.r`.
 
 ## How to run
@@ -77,9 +76,9 @@ The pipeline expects **three rasters** in `data/`:
 **NOTE:** It's recommended to open the RStudio project (`software-project.Rproj`) so the working directory is the project root.
 
 Then run the scripts in order:
-- **0)** `0-data_preparation.r` builds the grid + extracts variables and writes: `data/clean_data.gpkg`
-- **1)** `source("1-data-analysis.r")` runs statistics and model comparisons (reads: `data/clean_data.gpkg`)
-- **2)** `2-plots.r` produces and saves figures to `outputs/`
+- **0)** `0-data_preparation.r` builds the grid + extracts variables and writes `data/clean_data.gpkg`
+- **1)** `source("1-data-analysis.r")` reads `data/clean_data.gpkg` and then runs statistics and model comparisons
+- **2)** `2-plots.r` produces and saves graphs to `outputs/`
 
 If you prefer running from the terminal:
 ```bash
@@ -87,6 +86,9 @@ Rscript 0-data_preparation.r
 Rscript 1-data-analysis.r
 Rscript 2-plots.r
 ```
+
+## Outputs
+Explain better the outputs and the examples
 
 ## Project workflow
 
