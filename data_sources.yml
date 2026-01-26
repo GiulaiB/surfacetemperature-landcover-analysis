@@ -1,0 +1,10 @@
+data_dir: "data"
+recursive: false
+
+sources:
+  clc:
+    pattern: "CLC2018.*\\.tif$"
+  temp:
+    pattern: "CHELSA.*bio01d.*\\.nc$"
+  dgm:
+    pattern: "dhm_at.*\\.tif$"

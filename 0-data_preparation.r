@@ -1,29 +1,99 @@
+# Uncomment to install the packages. If not needed, skip
+# install.packages("beepr")
+# install.packages("tidyverse")
+# install.packages("sf")
+# install.packages("terra")
+# install.packages("rnaturalearth")
+# install.packages("exactextractr")
+
 library(tidyverse)
 library(sf)
 library(terra)
 library(rnaturalearth)
 library(exactextractr)
+library(yaml)
+library(beepr)
 
 # Load reusable project functions
 source("functions.R")
+
+##### Config-driven file discovery #####
+
+cfg <- yaml::read_yaml("data_sources.yml")
+
+data_dir <- if (!is.null(cfg$data_dir)) cfg$data_dir else "data"
+recursive <- isTRUE(cfg$recursive)
+
+data_files <- list.files(
+  path = data_dir,
+  full.names = TRUE,
+  recursive = recursive
+)
+
+
 
 ##### Import data #####
 
 # Corine Land Cover (CLC) 2018
 # CLC is categorical -> use nearest-neighbor resampling when reprojecting
-clc <- rast("data/U2018_CLC2018_V2020_20u1.tif") %>% 
+clc_matches <- data_files[stringr::str_detect(data_files, cfg$sources$clc$pattern)]
+if (length(clc_matches) == 0) {
+  stop(paste0("No CLC file found using pattern: ", cfg$sources$clc$pattern), call. = FALSE)
+}
+if (length(clc_matches) > 1) {
+  stop(
+    paste0(
+      "Multiple CLC files found.\nPattern: ", cfg$sources$clc$pattern,
+      "\nMatches:\n- ", paste(clc_matches, collapse = "\n- ")
+    ),
+    call. = FALSE
+  )
+}
+clc_path <- clc_matches[[1]]
+
+clc <- rast(clc_path) %>%
   terra::project("EPSG:3035", method = "near")
 
 # CHELSA bio01d 2018 (Mean annual temperature, stored as 0.1 Kelvin)
 # Temperature is continuous -> use bilinear resampling
-temp_raw <- rast("data/CHELSA_EUR11_obs_bio01d_2018_V.2.1.nc") %>% 
+temp_matches <- data_files[stringr::str_detect(data_files, cfg$sources$temp$pattern)]
+if (length(temp_matches) == 0) {
+  stop(paste0("No TEMP file found using pattern: ", cfg$sources$temp$pattern), call. = FALSE)
+}
+if (length(temp_matches) > 1) {
+  stop(
+    paste0(
+      "Multiple TEMP files found.\nPattern: ", cfg$sources$temp$pattern,
+      "\nMatches:\n- ", paste(temp_matches, collapse = "\n- ")
+    ),
+    call. = FALSE
+  )
+}
+temp_path <- temp_matches[[1]]
+
+temp_raw <- rast(temp_path) %>%
   terra::project("EPSG:3035", method = "bilinear")
 
 # Convert to °C (CHELSA: 0.1 K -> K -> °C)
 temp <- (temp_raw * 0.1) - 273.15
 
 # Digital Terrain Model (DGM) of Austria
-dgm <- rast("data/dhm_at_lamb_10m_2018.tif") %>% 
+dgm_matches <- data_files[stringr::str_detect(data_files, cfg$sources$dgm$pattern)]
+if (length(dgm_matches) == 0) {
+  stop(paste0("No DGM file found using pattern: ", cfg$sources$dgm$pattern), call. = FALSE)
+}
+if (length(dgm_matches) > 1) {
+  stop(
+    paste0(
+      "Multiple DGM files found.\nPattern: ", cfg$sources$dgm$pattern,
+      "\nMatches:\n- ", paste(dgm_matches, collapse = "\n- ")
+    ),
+    call. = FALSE
+  )
+}
+dgm_path <- dgm_matches[[1]]
+
+dgm <- rast(dgm_path) %>%
   terra::project("EPSG:3035", method = "bilinear")
 
 # Natural Earth - worldwide country borders
@@ -36,7 +106,7 @@ world <- ne_countries(scale = "medium", returnclass = "sf") %>%
 
 # Select Austria polygon and convert to terra SpatVector for crop/mask
 austria <- world %>%
-  filter(admin == "Austria" | name == "Austria") %>%
+  filter(name == "Austria") %>%
   vect()
 
 # Corine Land Cover (clc) clipped to Austria (from Natural Earth)
@@ -98,14 +168,7 @@ clc_props <- exact_extract(
   clc_codes,
   grid_1km_sf,
   clc_cover_df
-)
-
-# Convert to tibble and bind to the grid attributes
-clc_codes <- as.int(clc_at)
-
-clc_props <- exact_extract(clc_codes, 
-                           grid_1km_sf,
-                           clc_cover_df) %>%  # custom function
+) %>%  # custom function
   as_tibble(.name_repair = "unique")
 
 # Final grid with environmental variables and CLC cover percentages
@@ -115,3 +178,4 @@ grid_all <- bind_cols(grid_1km_sf, clc_props)
 
 ##### Save the grid #####
 st_write(grid_all, "data/clean_data.gpkg")
+beep(1)

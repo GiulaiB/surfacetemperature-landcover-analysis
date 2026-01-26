@@ -8,6 +8,8 @@ This project builds a reproducible R pipeline to study how **Land Cover** relate
 The workflow is split into three scripts: **data preparation → analyses → plots**, plus a testing script and a file containing the functions used. A brief description of all parts is given in the next paragraph. In addition, if you use `RStudio`, an RStudio project file called `software-project.Rproj` is included to ensure the scripts run correctly.
 
 ---
+
+
 ## Installation
 
 ### Software
@@ -40,6 +42,7 @@ install.packages(c(
 pkgs <- c("tidyverse","sf","terra","exactextractr","rnaturalearth","broom","rstatix","testthat","readr")
 invisible(lapply(pkgs, require, character.only = TRUE))
 ```
+
 
 ## Setup
 
@@ -75,6 +78,7 @@ The pipeline expects **three rasters** in `data/`:
 
 **NOTE:** If you prefer different filenames or a different folder layout, please update the `rast("...")` paths in `0-data_preparation.r`.
 
+
 ## How to run
 
 **NOTE:** It's recommended to open the RStudio project (`software-project.Rproj`) so the working directory is the project root.
@@ -82,10 +86,10 @@ The pipeline expects **three rasters** in `data/`:
 Then run the scripts in order:
 - **0)** `0-data_preparation.r` builds the grid + extracts variables and writes `data/clean_data.gpkg`
 - **1)** `source("1-data-analysis.r")` reads `data/clean_data.gpkg` and then runs statistics and model comparisons
-- **2)** `2-plots.r` produces and saves graphs to `outputs/`
+- **2)** `2-plots.r` produces and saves graphs into `outputs/`
 
 If you prefer running from the terminal:
-```bash
+```r
 Rscript 0-data_preparation.r
 Rscript 1-data-analysis.r
 Rscript 2-plots.r
@@ -94,9 +98,9 @@ Rscript 2-plots.r
 
 ## Project workflow
 
-### 0) Data preparation (`0-data_preparation.R`)
+### 0) Data preparation (`0-data_preparation.r`)
 
-The file `0-data_preparation.R` contains:
+The file `0-data_preparation.r` contains:
 - Loads and reprojects all rasters to **EPSG:3035 (ETRS89 / LAEA Europe)** *[1]*
 - Clips rasters to **Austria** borders
 - Creates a **1 km² grid**, clipped to the Austria boundaries
@@ -109,9 +113,9 @@ The output is saved as:
 - `data/clean_data.gpkg` (created locally in your `data/` folder)
 **NOTE:** Reprojecting large rasters to EPSG:3035 can be slow and memory-intensive. Make sure you have enough patience!
 
-### 1) Data analysis (`1-data_analysis.R`)
+### 1) Data analysis (`1-data_analysis.r`)
 
-The file `1-data_analysis.R` contains:
+The file `1-data_analysis.r` contains:
 - Pearson correlation test between Temperature and Elevation
 - Linear model: `temp ~ dgm`
 - Dominant land-cover classification (dominant class > 50%)
@@ -122,31 +126,31 @@ The file `1-data_analysis.R` contains:
   - added variable model: `temp ~ dgm + dominant_cover` (with “Semi-natural” as reference)
   - nested-model F-test + AIC comparison
 
-### 2) Plots (`2-plots.R`)
+### 2) Plots (`2-plots.r`)
 
-The file `2-plots.R` produces:
+The file `2-plots.r` produces:
 - Scatter plot: Temperature vs Elevation (+ regression line)
 - Boxplot: Temperature by dominant Land Cover category
 - Scatter plot: Temperature vs Elevation and Land Cover
 - Boxplot: Temperature by dominant Land Cover category by Elevation ranges
 
 The plots are saved into the `outputs/` folder as:
-- `outputs/linear_model_Temperature-Elevation.jpeg`
-- `outputs/boxplot_Land_Cover-Temperature.jpeg`
-- `outputs/linear_model_Temperature-Elevation-Land_Cover.jpeg`
-- `outputs/boxplot_Land_Cover-Temperature-Elevation.jpeg`
+- `outputs/linear_model_Temperature-Elevation.png`
+- `outputs/boxplot_Land_Cover-Temperature.png`
+- `outputs/linear_model_Temperature-Elevation-Land_Cover.png`
+- `outputs/boxplot_Land_Cover-Temperature-Elevation.png`
 
-### 3) Testing (`testing.R`)
+### 3) Testing (`testing.r`)
 
-The file `testing.R` uses `testthat` to check the project workflow. In particular:
+The file `testing.r` uses `testthat` to check the project workflow. In particular:
 - Check that core spatial inputs exist and have valid geometry and shared CRS
 - Verify clipped rasters keep expected resolution and extent
 - Executes tests on `area_weighted_mean` and `clc_cover_df` functions
 - Tests key analysis passages such as `dominant_cover` assignment and reference-level selection
 
-### 4) Functions (`functions.R`)
+### 4) Functions (`functions.r`)
 
-The file `function.R` defines two functions used as summary functions inside `exact_extract` for raster–polygon extraction. The two functions are:
+The file `function.r` defines two functions used as summary functions inside `exact_extract` for raster–polygon extraction. The two functions are:
 
 *`area_weighted_mean`*, that:
 - Checks that `values` and `coverage_fraction` have the same length
@@ -161,21 +165,22 @@ The file `function.R` defines two functions used as summary functions inside `ex
 
 ---
 
+
 ## Outputs
 
 After running the full pipeline, you will find different files created:
 
-**Data**
-- `data/clean_data.gpkg`: contained in the `data` folder, is a 1 km² grid over Austria with extracted variables (`temp`, `dgm`, `clc` land-cover percentages)
+### Data
+- `data/clean_data.gpkg`: contained in the `data/` folder, is a 1 km² grid over Austria with extracted variables (`temp`, `dgm`, `clc` land-cover percentages)
 
-**Tables**
-- `outputs/tables/stats_t_lc.csv`: contained in the `outputs` folder, shows descriptive statistics of temperature by dominant land cover
+### Tables
+- `outputs/tables/stats_t_lc.csv`: contained in the `outputs/` folder, shows descriptive statistics of temperature by dominant land cover
 - `outputs/tables/games_howell.csv`: Games–Howell post-hoc pairwise comparisons
 
-**Report**
-- `outputs/model_report.txt`: contained in the `outputs` folder, is a text file that shows correlation test, model summaries, Welch ANOVA, model comparison (nested ANOVA + AIC)
+### Report
+- `outputs/model_report.txt`: contained in the `outputs/` folder, is a text file that shows correlation test, model summaries, Welch ANOVA, model comparison (nested ANOVA + AIC)
 
-**Figures**
+### Figures
 - `outputs/linear_model_Temperature-Elevation.png`
 - `outputs/boxplot_Land_Cover-Temperature.png`
 - `outputs/linear_model_Temperature-Elevation-Land_Cover.png`
@@ -263,6 +268,7 @@ An exaple of what you can expect, is shown below. In particular, we can see that
 
 ---
 
+
 ## Repository structure
 
 Tracked files (added in the repository):
@@ -286,10 +292,10 @@ data/
   clean_data.gpkg
 
 outputs/
-  linear_model_Temperature-Elevation.jpeg
-  boxplot_Land_Cover-Temperature.jpeg
-  linear_model_Temperature-Elevation-Land_Cover.jpeg
-  boxplot_Land_Cover-Temperature-Elevation.jpeg
+  linear_model_Temperature-Elevation.png
+  boxplot_Land_Cover-Temperature.png
+  linear_model_Temperature-Elevation-Land_Cover.png
+  boxplot_Land_Cover-Temperature-Elevation.png
 
 ```
 
