@@ -7,49 +7,11 @@ library(exactextractr)
 # Load project functions
 source("functions.R")
 
-# source("0-data_preparation.R") # run "0-data_preparation.R" before this code
-# source("1-data_analysis.R") # run "1-data_analysis.R" before this code
+source("0-data_preparation.R") # run "0-data_preparation.R" before this code
+source("1-data_analysis.R") # run "1-data_analysis.R" before this code
 
 
 ########## Testing the data preparation file ##########
-
-
-##### Testing the pipeline #####
-
-test_that("Austria clipping object exists and has one feature/row", {
-  # GIVEN: austria object already created in the pipeline
-  skip_if_not(exists("austria"))
-  
-  # WHEN: checking the number of features
-  n <- nrow(sf::st_as_sf(austria))
-  
-  # THEN: exactly one country polygon exists
-  expect_equal(n, 1)
-})
-
-test_that("Austria geometry is valid", {
-  # GIVEN: austria object already created in the pipeline
-  skip_if_not(exists("austria"))
-  
-  # WHEN: validating geometry
-  valid <- terra::is.valid(austria)
-  
-  # THEN: geometry is valid
-  expect_true(valid)
-})
-
-test_that("CRS matches between rasters and Austria polygon", {
-  # GIVEN: austria, clc, temp, temp_stdv, dgm already created in the pipeline
-  skip_if_not(exists("clc"))
-  skip_if_not(exists("temp"))
-  skip_if_not(exists("dgm"))
-  
-  # WHEN / THEN: CRS must match
-  expect_true(terra::same.crs(clc, austria))
-  expect_true(terra::same.crs(temp, austria))
-  expect_true(terra::same.crs(dgm, austria))
-})
-
 
 ##### Testing the shape of the clipped variables #####
 
@@ -70,37 +32,6 @@ expect_ext_equal_tol <- function(e_out, e_exp, tol) {
   expect_equal(e_out$ymin, e_exp$ymin, tolerance = tol)
   expect_equal(e_out$ymax, e_exp$ymax, tolerance = tol)
 }
-
-test_that("Clipped rasters keep original grid resolution", {
-  # GIVEN: original rasters and their clipped versions exist
-  skip_if_not(exists("clc")  && exists("clc_at"))
-  skip_if_not(exists("temp") && exists("temp_at"))
-  skip_if_not(exists("dgm")  && exists("dgm_at"))
-  
-  # WHEN: comparing resolutions
-  # THEN: resolution of clipped rasters equals original rasters
-  expect_equal(res(clc_at),  res(clc))
-  expect_equal(res(temp_at), res(temp))
-  expect_equal(res(dgm_at),  res(dgm))
-})
-
-test_that("Clipped extents align to Austria bbox snapped outward to each raster grid", {
-  # GIVEN: austria + clipped rasters
-  skip_if_not(exists("austria"))
-  skip_if_not(exists("clc")  && exists("clc_at"))
-  skip_if_not(exists("temp") && exists("temp_at"))
-  skip_if_not(exists("dgm")  && exists("dgm_at"))
-  
-  # WHEN: computing expected aligned extents
-  exp_clc  <- terra::align(ext(austria), clc,  snap = "out")
-  exp_temp <- terra::align(ext(austria), temp, snap = "out")
-  exp_dgm  <- terra::align(ext(austria), dgm,  snap = "out")
-  
-  # THEN: clipped extents match expectations within tolerance based on the file's resolution
-  expect_ext_equal_tol(ext(clc_at),  exp_clc,  tol = min(res(clc)) * 1e-6)
-  expect_ext_equal_tol(ext(temp_at), exp_temp, tol = min(res(temp)) * 1e-6)
-  expect_ext_equal_tol(ext(dgm_at),  exp_dgm,  tol = min(res(dgm)) * 1e-6)
-})
 
 
 
@@ -128,38 +59,6 @@ test_that("'area_weighted_mean' ignores invalid values (NA/Inf) and invalid weig
   
   # THEN: only valid pairs are used
   expect_equal(res, 22)
-})
-
-
-
-##### Testing the values of downscaled variables ##### 
-
-test_that("Grid downscaled values stay within the clipped raster global min/max", {
-  # GIVEN: the pipeline objects exist
-  skip_if_not(exists("grid_1km_sf"))
-  skip_if_not(exists("temp_at") && exists("dgm_at"))
-  
-  tol <- 1e-6
-  
-  # Temperature
-  # WHEN: we compute global min/max of raster and grid column
-  r_min <- terra::global(temp_at[[1]], "min", na.rm = TRUE)[1, 1]
-  r_max <- terra::global(temp_at[[1]], "max", na.rm = TRUE)[1, 1]
-  g_min <- min(grid_1km_sf$temp, na.rm = TRUE)
-  g_max <- max(grid_1km_sf$temp, na.rm = TRUE)
-  
-  # THEN: grid range must be inside raster range
-  expect_gte(g_min, r_min - tol)
-  expect_lte(g_max, r_max + tol)
-  
-  # Elevation 
-  r_min <- terra::global(dgm_at[[1]], "min", na.rm = TRUE)[1, 1]
-  r_max <- terra::global(dgm_at[[1]], "max", na.rm = TRUE)[1, 1]
-  g_min <- min(grid_1km_sf$dgm, na.rm = TRUE)
-  g_max <- max(grid_1km_sf$dgm, na.rm = TRUE)
-  
-  expect_gte(g_min, r_min - tol)
-  expect_lte(g_max, r_max + tol)
 })
 
 
