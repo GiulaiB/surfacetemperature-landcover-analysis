@@ -200,7 +200,7 @@ An exaple of what you can expect, is shown below. In particular, we can see that
 - The dense diagonal band indicates that elevation is a dominant driver of temperature at this spatial scale
 - The vertical scatter around the line reflects other influences (regional climate gradients, aspect, local effects, dataset resolution, ...)
 
-![Temperature vs Elevation](outputs/linear_model_Temperature-Elevation.png)
+[<img src="outputs/linear_model_Temperature-Elevation.png" width="450">](outputs/linear_model_Temperature-Elevation.png)
 
 This first analisy provides a baseline for our work, showing that elevation alone explains an important fraction of temperature variability.
 
@@ -220,6 +220,8 @@ An exaple of what you can expect, is shown below. In particular, we can see that
 - Medians and spreads show how temperature varies by dominant cover
 - Outliers are expected because the grid spans wide elevation ranges and climates
 - Categories such as Wetlands/Water are exluded since we are studing the land-cover (?????)
+
+[<img src="outputs/boxplot_Land_Cover-Temperature.png" alt="Land cover vs Temperature (boxplot)" width="450">](outputs/boxplot_Land_Cover-Temperature.png)
 
 [Da tenere?] The table contained in `stats_t_lc.csv` shows descriptive statistics (mean, sd, min/max, etc.) of `temp` by dominant cover. Welch ANOVA tests whether mean temperatures differ across dominant classes (Welch is used because it is robust to unequal variances). If Welch ANOVA is significant, Games–Howell identifies *which pairs* differ (e.g., Artificial vs Semi-natural), while remaining robust to unequal variances and sample sizes.
 
@@ -242,7 +244,7 @@ An exaple of what you can expect, is shown below. In particular, we can see that
   - AIC (`AIC(lm_te, lm_telc)`) compares models balancing fit and complexity: a lower AIC suggests a better tradeoff. Coefficients for `dominant_cover` quantify the expected temperature offset associated with a given dominant cover after controlling for elevation.
   - In some land-cover classes (especially Artificial), observations may exist mainly at low elevations, so lines shown at high elevations can be extrapolations. Interpret offsets within the elevation range where each class has data.
 
-![Model predictions by land cover](outputs/linear_model_Temperature-Elevation-Land_Cover.png)
+[<img src="outputs/linear_model_Temperature-Elevation-Land_Cover.png" alt="Model predictions by land cover" width="450">](outputs/linear_model_Temperature-Elevation-Land_Cover.png)
 
 
 ### 4) Land cover differences within elevation bands
@@ -256,7 +258,7 @@ An exaple of what you can expect, is shown below. In particular, we can see that
 - If differences between land-cover classes persist within the same elevation band, that supports an association not explained only by elevation.
 - At high elevation bands, some land-cover categories may be absent (e.g., very few Artificial cells), so conclusions are limited by sample size.
 
-![Temperature by land cover within elevation bands](outputs/boxplot_Land_Cover-Temperature-Elevation.png)
+[<img src="outputs/boxplot_Land_Cover-Temperature-Elevation.png" alt="Temperature by land cover within elevation bands" width="450">](outputs/boxplot_Land_Cover-Temperature-Elevation.png)
 
 
 ---
@@ -290,5 +292,7 @@ outputs/
   boxplot_Land_Cover-Temperature-Elevation.jpeg
 
 ```
+
+---
 
 *[1] EPSG:3035 (ETRS89 / LAEA Europe) is a projected CRS (specific Geographic Coordinate Reference System) widely used for pan-European environmental analysis, particularly for statistical analysis and environmental monitoring, because it uses the Lambert Azimuthal Equal-Area projection (LAEA) to accurately represent areas across the continent. It's based on the European Terrestrial Reference System 1989 (ETRS89) datum and is centered around 52°N, 10°E, providing true-to-scale area representation for pan-European data.*
