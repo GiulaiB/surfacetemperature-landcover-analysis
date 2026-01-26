@@ -22,12 +22,11 @@ source("functions.R")
 cfg <- yaml::read_yaml("data_sources.yml")
 
 data_dir <- if (!is.null(cfg$data_dir)) cfg$data_dir else "data"
-recursive <- isTRUE(cfg$recursive)
 
 data_files <- list.files(
   path = data_dir,
   full.names = TRUE,
-  recursive = recursive
+  recursive = isTRUE(cfg$recursive)
 )
 
 

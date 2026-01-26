@@ -1,42 +1,27 @@
 # Austria Surface Temperature - Land Cover analysis
----
 
 This repository provides a reproducible R workflow to explore how **surface temperature** relates to **elevation** and **land cover** across Austria. In particular, this repository uses CHELSA, Corine Land Cover (CLC) and Digital terrain Model (DGM) open source data to build a **1 km² grid over Austria** and run a small set of statistical analyses to explore relationships between:
-- **Mean annual temperature** (`temp`; CHELSA bio01d, year 2018) 
-- **Elevation** (`dgm`; Digital terrain model Austria)
-- **Land cover composition** (`clc`; Corine Land Cover, year 2018)
+- **Mean annual temperature** (`temp`; CHELSA bio01d, year 2018),
+- **Elevation** (`dgm`; Digital terrain model Austria),
+- **Land cover composition** (`clc`; Corine Land Cover, year 2018).
 
-The pipeline:
-- builds a 1 km grid over Austria,
-- extracts **area-weighted mean** temperature and elevation per cell,
-- computes **land-cover macro-category composition** (%) per cell,
-- runs statistical analyses and produces plots.
-
-> **Note:** CHELSA *bio01d* collects mean annual near-surface air temperature (commonly interpreted as ~2 m air temperature). The project uses CHELSA mean annual temperature (bio01d), which represents surface temperature patterns, since there's only a couple of meters of gap from land. If you want to use other data sources, you can also use products like MODIS/ECOSTRESS.
-
-### Input file configuration
-
-The pipeline reads `data_sources.yml` to locate the input rasters using filename patterns for each dataset (CLC, CHELSA, DGM).  This makes the workflow easier to reproduce across machines without hard-coded local paths.
-If your file names differ, update the patterns. As long as the patterns match, there is no need to edit the scripts.
-
-
-### Workflow structure
-- **0)** data preparation (grid + extraction + `clean_data.gpkg`)
-- **1)** analysis (correlation, models, dominant land cover, tests)
-- **2)** plots (saved figures in `outputs/`)
-- plus: reusable functions (`functions.R`) and tests (`testing.r`)
-
-A brief description of all parts is given below. In addition, if you use `RStudio`, an RStudio project file called `software-project.Rproj` is included to ensure the scripts run correctly.
+The workflow is split into three scripts: **data preparation → analyses → plots**, plus a testing script and a `functions.r` file.  
+A brief description of all parts is given in the next paragraph. In addition, if you use `RStudio`, an RStudio project file called `software-project.Rproj` is included to ensure the scripts run correctly. A brief description of all parts is given below. In addition, an RStudio project file called `software-project.Rproj` is included to ensure the scripts run correctly.
 
 ---
 
+
+## Input file configuration
+
+The pipeline reads `data_sources.yml` to locate the input rasters using filename patterns for each dataset (CLC, CHELSA, DGM).  This makes the workflow easier to reproduce across machines without hard-coded local paths.  
+The default file names already work. If you pattern differs, update the file `data_sources.yml` (no need to edit the scripts).
 
 
 ## Requirements
 
 ### Software
 - **R** (recent version recommended)
-- (Optional) **RStudio**
+- **RStudio**
 
 ### R packages
 Used across scripts:
@@ -53,14 +38,6 @@ install.packages(c(
 ))
 ```
 
-(Optional) After installation, verify packages load and contrasts:
-
-```r
-pkgs <- c("tidyverse","sf","terra","exactextractr","rnaturalearth","broom","rstatix","testthat","readr")
-invisible(lapply(pkgs, require, character.only = TRUE))
-```
-
-
 
 ## Setup
 
@@ -72,13 +49,7 @@ In the project root, create:
   - `data/` (raw inputs + generated `clean_data.gpkg`)
   - `outputs/` (saved plots)
 
-(Optional) Quick folder creation can be done by adding:
-```r
-dir.create("data")
-dir.create("outputs")
-```
-
-### 2) Configure input discovery (`data_sources.yml`)
+### 2) Input configuration (`data_sources.yml`)
 
 The pipeline reads:
 - `data_dir`: where to search (default "data")
