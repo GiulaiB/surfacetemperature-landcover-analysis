@@ -1,15 +1,8 @@
 library(testthat)
-library(terra)
-library(sf)
 library(tidyverse)
-library(exactextractr)
 
 # Load project functions
 source("functions.R")
-
-source("0-data_preparation.R") # run "0-data_preparation.R" before this code
-source("1-data_analysis.R") # run "1-data_analysis.R" before this code
-
 
 ########## Testing the data preparation file ##########
 
@@ -59,6 +52,15 @@ test_that("'area_weighted_mean' ignores invalid values (NA/Inf) and invalid weig
   
   # THEN: only valid pairs are used
   expect_equal(res, 22)
+})
+
+test_that("'area_weighted_mean' errors when values/weights lengths differ", {
+  # GIVEN: values and weights with different lengths
+  values <- c(10, 20)
+  weights <- c(1)
+  
+  # WHEN / THEN: the function must error
+  expect_error(area_weighted_mean(values, weights))
 })
 
 
@@ -112,6 +114,18 @@ test_that("'clc_cover_df' macro percentages sum to 100", {
   }
 })
 
+test_that("'clc_cover_df' returns NA row when total valid weight is zero", {
+  # GIVEN: valid codes but all weights are zero
+  codes <- c(1, 12, 23)
+  w <- c(0, 0, 0)
+  
+  # WHEN: computing macro-category composition
+  out <- clc_cover_df(codes, w)
+  
+  # THEN: all outputs are NA (no valid denominator)
+  expect_true(all(is.na(out)))
+})
+
 
 
 ########## Testing the analysis file ##########
@@ -139,7 +153,7 @@ test_that("dominant_cover is NA when the maximum Land Cover percentage is below 
     "perc_wetlands", "perc_water", "perc_no_data"
   )
   
-  # WHEN: we compute max_perc, n_max, and dominant_cover (same logic as 1-data_analyses.R)
+  # WHEN: we compute max_perc, n_max, and dominant_cover
   out <- df_lm %>%
     mutate(
       max_perc = pmax(!!!syms(lc_cols), na.rm = TRUE),
@@ -300,5 +314,3 @@ test_that("reference level selection uses Seminatural if present, otherwise the 
   # THEN: the most frequent category is the reference
   expect_equal(levels(df2$dominant_cover)[1], "Artificial")
 })
-
-cat("All tests in testing.r completed.\n")
