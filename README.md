@@ -25,15 +25,19 @@ The following core packages are used across scripts:
 - rstatix
 - testthat
 
-To install, once in R run this:
+To install, run this in **R**:
 
-```bash
-install.packages(c("tidyverse", "sf", "terra", "exactextractr", "rnaturalearth", "broom", "rstatix", "testthat"))
+```r
+install.packages(c(
+  "tidyverse", "sf", "terra", "exactextractr", "rnaturalearth",
+  "broom", "rstatix", "testthat", "readr"
+))
 ```
 
-(Optional but recommended) After installation, you can quickly verify that everything loads:
-```bash
-pkgs <- c("tidyverse","sf","terra","exactextractr","rnaturalearth","broom","rstatix","testthat")
+(Optional) After installation, verify packages load:
+
+```r
+pkgs <- c("tidyverse","sf","terra","exactextractr","rnaturalearth","broom","rstatix","testthat","readr")
 invisible(lapply(pkgs, require, character.only = TRUE))
 ```
 
@@ -87,8 +91,6 @@ Rscript 1-data-analysis.r
 Rscript 2-plots.r
 ```
 
-## Outputs
-Explain better the outputs and the examples
 
 ## Project workflow
 
@@ -129,10 +131,10 @@ The file `2-plots.R` produces:
 - Boxplot: Temperature by dominant Land Cover category by Elevation ranges
 
 The plots are saved into the `outputs/` folder as:
-- `outputs/linear_model_Temperature-Elevation.png`
-- `outputs/boxplot_Land_Cover-Temperature.png`
-- `outputs/linear_model_Temperature-Elevation-Land_Cover.png`
-- `outputs/boxplot_Land_Cover-Temperature-Elevation.png`
+- `outputs/linear_model_Temperature-Elevation.jpeg`
+- `outputs/boxplot_Land_Cover-Temperature.jpeg`
+- `outputs/linear_model_Temperature-Elevation-Land_Cover.jpeg`
+- `outputs/boxplot_Land_Cover-Temperature-Elevation.jpeg`
 
 ### 3) Testing (`testing.R`)
 
@@ -159,6 +161,106 @@ The file `function.R` defines two functions used as summary functions inside `ex
 
 ---
 
+## Outputs
+
+After running the full pipeline, you will find different files created:
+
+**Data**
+- `data/clean_data.gpkg`: contained in the `data` folder, is a 1 km² grid over Austria with extracted variables (`temp`, `dgm`, `clc` land-cover percentages)
+
+**Tables**
+- `outputs/tables/stats_t_lc.csv`: contained in the `outputs` folder, shows descriptive statistics of temperature by dominant land cover
+- `outputs/tables/games_howell.csv`: Games–Howell post-hoc pairwise comparisons
+
+**Report**
+- `outputs/model_report.txt`: contained in the `outputs` folder, is a text file that shows correlation test, model summaries, Welch ANOVA, model comparison (nested ANOVA + AIC)
+
+**Figures**
+- `outputs/linear_model_Temperature-Elevation.png`
+- `outputs/boxplot_Land_Cover-Temperature.png`
+- `outputs/linear_model_Temperature-Elevation-Land_Cover.png`
+- `outputs/boxplot_Land_Cover-Temperature-Elevation.png`
+
+**NOTES:**
+- The project uses CHELSA mean annual temperature (bio01d), which represents near-surface temperature patterns. Since it's at maximum 2m above the surface, we'll use it to track the land surface temperature.
+- Results depend on the choice of the grid resolution (here 1 km²) and the threshold used for defining a dominant land-cover class ( here > 50%).
+- Climate rasters represent gridded temperature fields at their native resolution; local microclimates are not resolved. Interpretation should also consider dataset limitations and resolution.
+- Land cover (CLC) is simplified into macro-categories, finer CLC classes may reveal additional patterns.
+
+### 1) Temperature vs Elevation relationship
+
+**Figure:** `outputs/linear_model_Temperature-Elevation.png`
+
+First of all we wanted to study if the mean annual temperature is associated with elevation across Austria. This plot shows a strong negative relationship between **mean annual temperature** and **elevation** across the 1 km² grid cells.  
+The regression line summarizes the average decrease in temperature with altitude. 
+
+[lo aggiungo?] In this products the **Pearson test** reports correlation strength and a p-value. A significant result indicates that temperature and elevation are linearly associated. The **linear model** `temp ~ dgm` estimates the expected temperature change per unit elevation (slope). A **negative slope** is consistent with the typical decrease of temperature with altitude.
+
+An exaple of what you can expect, is shown below. In particular, we can see that:
+- The dense diagonal band indicates that elevation is a dominant driver of temperature at this spatial scale
+- The vertical scatter around the line reflects other influences (regional climate gradients, aspect, local effects, dataset resolution, ...)
+
+![Temperature vs Elevation](outputs/linear_model_Temperature-Elevation.png)
+
+This first analisy provides a baseline for our work, showing that elevation alone explains an important fraction of temperature variability.
+
+
+### 2) Dominant land cover classes and temperature differences
+
+**Figure:** `outputs/boxplot_Land_Cover-Temperature.png`  
+**Tables:** `outputs/tables/stats_t_lc.csv`, `outputs/tables/games_howell.csv`
+
+Each grid cell is assigned a **dominant land-cover macro-category** when one category covers **> 50%** of the cell (as we can see in `1-data-analysis.r`). The analysis focuses on the three most informative dominant categories:
+- Artificial
+- Agricultural
+- Semi-natural
+This boxplot compares the temperature distributions across dominant categories.
+
+An exaple of what you can expect, is shown below. In particular, we can see that:
+- Medians and spreads show how temperature varies by dominant cover
+- Outliers are expected because the grid spans wide elevation ranges and climates
+- Categories such as Wetlands/Water are exluded since we are studing the land-cover (?????)
+
+[Da tenere?] The table contained in `stats_t_lc.csv` shows descriptive statistics (mean, sd, min/max, etc.) of `temp` by dominant cover. Welch ANOVA tests whether mean temperatures differ across dominant classes (Welch is used because it is robust to unequal variances). If Welch ANOVA is significant, Games–Howell identifies *which pairs* differ (e.g., Artificial vs Semi-natural), while remaining robust to unequal variances and sample sizes.
+
+
+### 3) Improving predictions by studying how dominant land cover classes relate to temperature differences
+
+**Figure:** `outputs/linear_model_Temperature-Elevation-Land_Cover.png`  
+**Report:** `outputs/model_report.txt` (Model comparison section)
+
+The next step tests whether land cover adds explanatory power beyond elevation. Here we fit two models on cells belonging to the three main dominant categories (Artificial, Agricultural, Semi-natural):
+- Baseline model: `temp ~ dgm`
+- Extended model: `temp ~ dgm + dominant_cover` (Semi-natural as reference)
+
+The plot shows predicted temperature–elevation lines **by land cover** from the extended model (slopes are parallel because no interaction is included).
+
+An exaple of what you can expect, is shown below. In particular, we can see that:
+- If the colored lines differ vertically at the same elevation, it suggests a land-cover-related offset **after controlling for elevation**.
+- The formal evidence comes from:
+  - nested-model ANOVA (`anova(lm_te, lm_telc)`) tests whether the extended model significantly improves fit compared to the baseline
+  - AIC (`AIC(lm_te, lm_telc)`) compares models balancing fit and complexity: a lower AIC suggests a better tradeoff. Coefficients for `dominant_cover` quantify the expected temperature offset associated with a given dominant cover after controlling for elevation.
+  - In some land-cover classes (especially Artificial), observations may exist mainly at low elevations, so lines shown at high elevations can be extrapolations. Interpret offsets within the elevation range where each class has data.
+
+![Model predictions by land cover](outputs/linear_model_Temperature-Elevation-Land_Cover.png)
+
+
+### 4) Land cover differences within elevation bands
+
+**Figure:** `outputs/boxplot_Land_Cover-Temperature-Elevation.png`
+
+In the end, we wanted to know if temperature differences between dominant land-cover classes are similar across different elevation ranges.
+This plot stratifies the data into elevation bands (every 500 m) and compares temperature across land-cover categories **within each band**. It helps assess whether land-cover differences are consistent at low vs high elevations, or whether they mainly reflect elevation distribution differences.
+
+An exaple of what you can expect, is shown below. In particular, we can see that:
+- If differences between land-cover classes persist within the same elevation band, that supports an association not explained only by elevation.
+- At high elevation bands, some land-cover categories may be absent (e.g., very few Artificial cells), so conclusions are limited by sample size.
+
+![Temperature by land cover within elevation bands](outputs/boxplot_Land_Cover-Temperature-Elevation.png)
+
+
+---
+
 ## Repository structure
 
 Tracked files (added in the repository):
@@ -182,10 +284,10 @@ data/
   clean_data.gpkg
 
 outputs/
-  linear_model_Temperature-Elevation.png
-  boxplot_Land_Cover-Temperature.png
-  linear_model_Temperature-Elevation-Land_Cover.png
-  boxplot_Land_Cover-Temperature-Elevation.png
+  linear_model_Temperature-Elevation.jpeg
+  boxplot_Land_Cover-Temperature.jpeg
+  linear_model_Temperature-Elevation-Land_Cover.jpeg
+  boxplot_Land_Cover-Temperature-Elevation.jpeg
 
 ```
 
