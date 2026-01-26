@@ -11,12 +11,6 @@ A brief description of all parts is given in the next paragraph. In addition, if
 ---
 
 
-## Input file configuration
-
-The pipeline reads `data_sources.yml` to locate the input rasters using filename patterns for each dataset (CLC, CHELSA, DGM).  This makes the workflow easier to reproduce across machines without hard-coded local paths.  
-The default file names already work. If you pattern differs, update the file `data_sources.yml` (no need to edit the scripts).
-
-
 ## Requirements
 
 ### Software
@@ -49,28 +43,8 @@ In the project root, create:
   - `data/` (raw inputs + generated `clean_data.gpkg`)
   - `outputs/` (saved plots)
 
-### 2) Input configuration (`data_sources.yml`)
 
-The pipeline reads:
-- `data_dir`: where to search (default "data")
-- `recursive`: whether to search subfolders
-- `sources` + `pattern`: regex patterns to match your files
-
-Example (as in this repo):
-```r
-data_dir: "data"
-recursive: false
-
-sources:
-  clc:
-    pattern: "CLC2018.*\\.tif$"
-  temp:
-    pattern: "CHELSA.*bio01d.*\\.nc$"
-  dgm:
-    pattern: "dhm_at.*\\.tif$"
-```
-
-3) Download the datasets
+### 2) Download the datasets
 
 The pipeline expects **three rasters** in `data/`:
 
@@ -96,6 +70,10 @@ The datasets are listed in `DATA_SOURCES.md`. See the file for the official down
 
 > **Note:** If your filenames differ, change the patterns in `data_sources.yml` rather than changing the scripts.
 
+### 3) Input file configuration (`data_sources.yml`)
+
+The pipeline reads `data_sources.yml` to locate the input rasters using filename patterns for each dataset (CLC, CHELSA, DGM).  This makes the workflow easier to reproduce across machines without hard-coded local paths.  
+The default file names already work. If you pattern differs, update the file `data_sources.yml` (no need to edit the scripts).
 
 
 ## How to run
