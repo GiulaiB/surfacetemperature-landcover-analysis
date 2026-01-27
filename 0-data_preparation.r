@@ -53,7 +53,7 @@ clc_path <- clc_matches[[1]]
 clc <- rast(clc_path) %>%
   terra::project("EPSG:3035", method = "near")
 
-# CHELSA bio01d 2018 (Mean annual temperature, stored as 0.1 Kelvin)
+# CHELSA bio01d 2018 (Mean annual temperature, stored as 10 Kelvin)
 # Temperature is continuous -> use bilinear resampling
 temp_matches <- data_files[stringr::str_detect(data_files, cfg$sources$temp$pattern)]
 if (length(temp_matches) == 0) {
@@ -73,7 +73,7 @@ temp_path <- temp_matches[[1]]
 temp_raw <- rast(temp_path) %>%
   terra::project("EPSG:3035", method = "bilinear")
 
-# Convert to °C (CHELSA: 0.1 K -> K -> °C)
+# Convert to °C (CHELSA: 10 K -> °C)
 temp <- (temp_raw * 0.1) - 273.15
 
 # Digital Terrain Model (DGM) of Austria
