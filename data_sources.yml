@@ -1,14 +1,13 @@
-#`data_dir`: where to search (default "data")
+# Where to search (default folder "data")
 data_dir: "data"
 
-#`recursive`: whether to search subfolders
+# Whether to search subfolders
 recursive: true
 
 sources:
   clc:
-    pattern: "CLC2018.*\\.tif$" #regex patterns to match your files for Corine Land Cover
+    pattern: "CLC2018.*\\.tif$" # search patterns to match your files for Corine Land Cover
   temp:
-    pattern: "CHELSA.*bio01d.*\\.nc$" #regex patterns to match your files for CHELSA bio01d
+    pattern: "CHELSA.*bio01d.*\\.nc$" # search  patterns to match your files for CHELSA bio01d
   dgm:
-    pattern: "dhm_at.*\\.tif$" #regex patterns to match your files for Digital terrain model Austria
-
+    pattern: "dhm_at.*\\.tif$" # search patterns to match your files for Digital Terrain Model Austria
